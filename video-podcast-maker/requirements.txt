@@ -1,0 +1,4 @@
+azure-cognitiveservices-speech>=1.35.0,<2.0.0
+dashscope>=1.17.0,<2.0.0
+edge-tts>=6.1.0,<7.0.0
+requests>=2.31.0,<3.0.0

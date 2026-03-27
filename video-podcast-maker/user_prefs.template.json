@@ -1,0 +1,69 @@
+{
+  "version": "1.1",
+  "updated_at": null,
+  "global": {
+    "visual": {
+      "theme": "light",
+      "primaryColor": "#4f6ef7",
+      "backgroundColor": "#ffffff",
+      "accentColor": "#FF6B6B",
+      "preferredComponents": [],
+      "titlePosition": "top-center",
+      "progressBar": true,
+      "typography": {
+        "heroTitle": 96,
+        "sectionTitle": 80,
+        "cardTitle": 38,
+        "bodyText": 32,
+        "caption": 24,
+        "scalePreference": 1.0
+      },
+      "layout": {
+        "textAlign": "center",
+        "contentWidth": 0.9,
+        "cardPadding": 36
+      },
+      "spacing": {
+        "sectionPadding": 60,
+        "itemGap": 28,
+        "marginBottom": 100
+      }
+    },
+    "tts": {
+      "backend": "azure",
+      "rate": "+5%",
+      "voice": "zh-CN-XiaoxiaoNeural"
+    },
+    "content": {
+      "tone": "professional",
+      "verbosity": "balanced",
+      "sectionCount": 5,
+      "outroStyle": "standard"
+    }
+  },
+  "topic_patterns": {
+    "tech": {
+      "visual": { "primaryColor": "#4f6ef7", "theme": "light" },
+      "content": { "tone": "professional" }
+    },
+    "finance": {
+      "visual": { "primaryColor": "#1a1a2e", "theme": "dark" },
+      "content": { "tone": "professional" }
+    },
+    "education": {
+      "visual": { "primaryColor": "#22c55e", "theme": "light" },
+      "content": { "tone": "casual" }
+    },
+    "lifestyle": {
+      "visual": { "primaryColor": "#FF6B6B", "theme": "light" },
+      "content": { "tone": "casual" }
+    },
+    "news": {
+      "visual": { "primaryColor": "#dc2626", "theme": "light" },
+      "content": { "tone": "professional", "verbosity": "concise" }
+    }
+  },
+  "style_profiles": {},
+  "design_references": {},
+  "learning_history": []
+}
