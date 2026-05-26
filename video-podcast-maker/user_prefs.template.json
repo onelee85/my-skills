@@ -1,7 +1,25 @@
 {
-  "version": "1.1",
+  "version": "1.6",
   "updated_at": null,
   "global": {
+    "platform": "bilibili",
+    "language": "zh-CN",
+    "cta": {
+      "type": "auto",
+      "text": null,
+      "animation": null
+    },
+    "subtitle": {
+      "enabled": true,
+      "fontName": "auto",
+      "fontSize": 20,
+      "primaryColor": "&H00333333",
+      "outlineColor": "&H00FFFFFF",
+      "bold": false,
+      "outline": 2,
+      "alignment": 2,
+      "marginV": 6
+    },
     "visual": {
       "theme": "light",
       "primaryColor": "#4f6ef7",
@@ -9,7 +27,13 @@
       "accentColor": "#FF6B6B",
       "preferredComponents": [],
       "titlePosition": "top-center",
-      "progressBar": true,
+      "progressBar": {
+        "enabled": true,
+        "height": 6,
+        "fontSize": 18,
+        "activeColor": "auto",
+        "position": "bottom"
+      },
       "typography": {
         "heroTitle": 96,
         "sectionTitle": 80,
@@ -30,15 +54,34 @@
       }
     },
     "tts": {
-      "backend": "azure",
+      "backend": "edge",
       "rate": "+5%",
-      "voice": "zh-CN-XiaoxiaoNeural"
+      "voices": {
+        "azure": "zh-CN-XiaoxiaoNeural",
+        "edge": "zh-CN-XiaoxiaoNeural",
+        "doubao": "BV001_streaming",
+        "cosyvoice": "longxiaochun",
+        "elevenlabs": "21m00Tcm4TlvDq8ikWAM",
+        "google": "en-US-Neural2-F",
+        "openai": "alloy"
+      }
+    },
+    "bgm": {
+      "volume": 0.05,
+      "track": "perfect-beauty",
+      "tracks": {
+        "perfect-beauty": "perfect-beauty-191271.mp3",
+        "calm-piano": "snow-stevekaldes-piano-397491.mp3"
+      }
     },
     "content": {
       "tone": "professional",
       "verbosity": "balanced",
       "sectionCount": 5,
-      "outroStyle": "standard"
+      "outroStyle": "standard",
+      "chapters": true,
+      "heroOpening": null,
+      "outroClosing": null
     }
   },
   "topic_patterns": {

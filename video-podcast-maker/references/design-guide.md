@@ -1,6 +1,6 @@
 # Video Podcast Maker — Design Guide
 
-> **When to load:** Claude loads this file when working on Step 9 (Remotion composition) or when the user asks about visual design.
+> **When to load:** Load this file when working on Step 9 (Remotion composition) or when the user asks about visual design.
 
 ---
 
@@ -44,7 +44,7 @@ Hard constraints for 1080p design space — prevents small text and empty layout
 
 ## Design Philosophy
 
-Templates (`templates/`) are **starting points, not blueprints**. Claude SHOULD customize visual design per video topic:
+Templates (`templates/`) are **starting points, not blueprints**. The agent SHOULD customize visual design per video topic:
 
 - **Color palette**: match the subject (tech → cool blues/grays, food → warm tones, finance → dark/gold)
 - **Section layouts**: create new component arrangements, don't repeat the same layout
@@ -55,6 +55,18 @@ Templates (`templates/`) are **starting points, not blueprints**. Claude SHOULD 
 **Keep consistent**: Technical Rules (4K, safe zones, min sizes), component imports, `timing.json`-driven timing.
 
 **Vary freely**: colors, gradients, backgrounds, layout composition, card styles, icon choices, spacing, animation timing, section visual identity.
+
+### Theme-based background rules
+
+When `user_prefs.visual.theme` is `"light"`:
+- **All section backgrounds MUST be white (`#ffffff`)**. Do NOT use dark backgrounds, colored backgrounds, or alternate grays.
+- Use subtle radial/linear gradients over white (`${color}06`-`${color}10`) for visual variety between sections.
+- All text must use dark colors (`#1a1a1a` or theme colors). Never use white/light text.
+- Tech cards, stat cards, etc. should use tinted backgrounds (`${color}08`) instead of dark card backgrounds.
+
+When `user_prefs.visual.theme` is `"dark"`:
+- Section backgrounds use dark colors (`#0f172a`, `#1a1a2e`, etc.)
+- Text uses white/light colors.
 
 ---
 
@@ -78,8 +90,29 @@ Templates (`templates/`) are **starting points, not blueprints**. Claude SHOULD 
 | 1 | **Layout variety** | ≥3 different layout types (centered, grid, split, timeline, etc.) |
 | 2 | **Background alternation** | No 2 consecutive sections share the same background |
 | 3 | **Unified color scheme** | Primary/secondary/accent used consistently |
-| 4 | **Thumbnail readability** | Title readable at ~300px thumbnail width |
+| 4 | **Thumbnail readability** | Title ≥120px, centered, legible at ~300px thumbnail width |
 | 5 | **Hero impact** | Large text + decorative elements or gradient |
+
+### Remotion Thumbnail Design
+
+Thumbnails render at ~300px in feeds. Only bold, oversized elements survive at that scale.
+
+**Hard rules (MUST follow):**
+
+| Rule | Requirement |
+|------|-------------|
+| **Layout** | Content centered both horizontally and vertically |
+| **Title** | ≥120px bold. The dominant visual element — as large as the text length allows |
+| **Icons** | ≥120px. Serve as visual anchors alongside text |
+| **Coverage** | Text + icons should fill most of the canvas. Minimize empty space. |
+| **Readability** | Must be legible at 300px width — use text-stroke, text-shadow, or contrasting overlay as needed |
+
+**Design guidance (adapt per topic):**
+- Prefer 2-3 lines of text (title + subtitle or hook) over a single line — more text = more information density
+- Use high-saturation colors that pop in feeds; avoid muted tones
+- Consider a short hook phrase ("Why It Matters", "Top 5") to boost curiosity — as badge, subtitle, or integrated into the title
+- Background should support the text, not compete with it (gradient, blurred image, solid color all work)
+- When in doubt, scale text and icons up rather than down
 
 ### TTS Quality Guidance
 
@@ -93,7 +126,7 @@ Templates (`templates/`) are **starting points, not blueprints**. Claude SHOULD 
 
 ## Visual Design Reference (recommended)
 
-Production-verified sizes as recommended reference. Claude may adjust freely but MUST NOT go below Minimums.
+Production-verified sizes as recommended reference. The agent may adjust freely but MUST NOT go below Minimums.
 
 ### Typography Scale (1080p design space)
 
@@ -107,6 +140,46 @@ Production-verified sizes as recommended reference. Claude may adjust freely but
 | **Body Text** | 32-40px | 500-600 | Paragraphs, list items, descriptions |
 | **Tags / Pills** | 28-36px | 600 | Labels, badges, categories |
 | **Icons** | 56-80px | — | Card icons, decorative elements |
+
+### Icon Selection Guide
+
+The full [Lucide icon library](https://lucide.dev/icons/) (1500+ icons) is available. Use kebab-case names (e.g., `"shield-check"`, `"brain-circuit"`). Browse https://lucide.dev/icons/ to find the best match.
+
+**Semantic mapping — pick icons by concept, not by guessing:**
+
+| Concept | Recommended Icon | Alternatives |
+|---------|-----------------|--------------|
+| AI / Intelligence | `brain` | `brain-circuit`, `sparkles`, `bot` |
+| Speed / Performance | `zap` | `gauge`, `rocket`, `timer` |
+| Security / Privacy | `shield` | `shield-check`, `lock`, `key-round` |
+| Data / Analytics | `bar-chart-3` | `pie-chart`, `trending-up`, `chart-line` |
+| Money / Cost | `dollar-sign` | `wallet`, `coins`, `banknote` |
+| Team / Collaboration | `users` | `users-round`, `handshake`, `message-circle` |
+| Cloud / Infra | `cloud` | `server`, `database`, `hard-drive` |
+| Code / Dev | `code` | `terminal`, `file-code`, `braces` |
+| Success / Complete | `check-circle` | `circle-check`, `badge-check`, `trophy` |
+| Warning / Risk | `alert-triangle` | `shield-alert`, `alert-circle`, `ban` |
+| Innovation / New | `lightbulb` | `sparkles`, `wand`, `lamp` |
+| Growth / Increase | `trending-up` | `arrow-up-right`, `chart-no-axes-combined`, `sprout` |
+| Time / Schedule | `clock` | `calendar`, `timer`, `hourglass` |
+| Global / World | `globe` | `earth`, `map`, `languages` |
+| Settings / Config | `settings` | `sliders-horizontal`, `wrench`, `cog` |
+| Communication | `message-circle` | `mail`, `phone`, `megaphone` |
+| Education / Learn | `graduation-cap` | `book-open`, `school`, `notebook-pen` |
+| Health / Medical | `heart-pulse` | `activity`, `stethoscope`, `pill` |
+| Mobile / App | `smartphone` | `tablet`, `app-window`, `monitor` |
+| Integration / Connect | `plug` | `cable`, `link`, `puzzle` |
+| Search / Discover | `search` | `scan`, `radar`, `compass` |
+| Storage / Save | `database` | `hard-drive`, `archive`, `save` |
+| Automation / Workflow | `workflow` | `repeat`, `git-branch`, `route` |
+| Creative / Design | `palette` | `brush`, `pen-tool`, `figma` |
+| Video / Media | `video` | `play-circle`, `clapperboard`, `film` |
+
+**Rules:**
+- Always use semantic names from this table when the concept matches
+- For concepts not listed, browse https://lucide.dev/icons/ and pick the closest match
+- Prefer specific icons over generic ones (e.g., `shield-check` over `check` for "security verified")
+- Each card/section in a group should use a **different** icon — never repeat icons in parallel items
 
 ### Layout Patterns (recommended)
 
@@ -156,7 +229,7 @@ Every section SHOULD include at least one animated background layer for depth. A
 
 ## Section Layout Presets (SHOULD use)
 
-Pre-built layouts from `SectionLayouts.tsx` — Claude SHOULD pick from these before creating custom layouts. Each includes animated backgrounds, proper spacing, and theme integration.
+Pre-built layouts from `SectionLayouts.tsx` — the agent SHOULD pick from these before creating custom layouts. Each includes animated backgrounds, proper spacing, and theme integration.
 
 | Layout | Visual | Best For |
 |--------|--------|----------|
@@ -207,18 +280,18 @@ Plus existing components: `ComparisonCard`, `Timeline`, `CodeBlock`, `QuoteBlock
 
 | Prop | Default | Description |
 |------|---------|-------------|
-| `src` | — | Path to JSON in `public/` (via `staticFile`) or full CORS-enabled URL |
+| `src` | — | Path to JSON in `--public-dir` (via `staticFile`) or full CORS-enabled URL |
 | `animationData` | — | Pre-loaded JSON data (takes precedence over `src`) |
 | `loop` | `false` | Whether to loop the animation |
 | `direction` | `"forward"` | `"forward"` or `"backward"` |
 | `playbackRate` | `1` | Speed multiplier |
 | `enableEntrance` | `false` | Wrap in entrance fade-in animation |
 
-**Recommended usage**: Download Lottie JSON files to the video's `public/animations/` directory, then reference with `<LottieAnimation src="animations/brain.json" width={200} height={200} loop />`. Use for concept icons, character animations, decorative elements, or section transitions.
+**Recommended usage**: Download Lottie JSON files to `videos/{name}/animations/`, then reference with `<LottieAnimation src="animations/brain.json" width={200} height={200} loop />` (resolved via `--public-dir`). Use for concept icons, character animations, decorative elements, or section transitions.
 
 ### Layout Sequencing Rules (MUST follow)
 
-Claude MUST vary layouts across sections. Follow these rules to prevent visual monotony:
+The agent MUST vary layouts across sections. Follow these rules to prevent visual monotony:
 
 | Rule | Requirement |
 |------|-------------|

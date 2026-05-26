@@ -1,16 +1,18 @@
 // React import not needed with react-jsx transform
 import { useCurrentFrame } from "remotion";
 import type { VideoProps } from "../Root";
-import timing from "../../public/timing.json";
+import { useTiming } from "./useTiming";
+import type { TimingSection } from "./useTiming";
 
 export const ChapterProgressBar = ({
   props,
   chapters,
 }: {
   props: VideoProps;
-  chapters: typeof timing.sections;
+  chapters: TimingSection[];
 }) => {
   const frame = useCurrentFrame();
+  const timing = useTiming();
   const totalFrames = timing.total_frames;
   const progress = frame / totalFrames;
 

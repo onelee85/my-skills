@@ -2,7 +2,7 @@
  * SectionLayouts — pre-built section layouts for visual variety
  *
  * These are higher-level layouts that combine backgrounds, animations,
- * and content placement. Claude picks one per section and fills in content.
+ * and content placement. The agent picks one per section and fills in content.
  *
  * Each layout is theme-aware (uses props.primaryColor etc.) and
  * orientation-aware (adapts for 16:9 / 9:16).
@@ -434,52 +434,73 @@ export const MetricsRow = ({
             gap: v ? 20 : 28,
           }}
         >
-          {metrics.map((m, i) => {
-            const anim = useEntrance(props.enableAnimations, staggerDelay(i, 6, 8));
-            const color = m.color || colors[i % colors.length];
-            return (
-              <div
-                key={i}
-                style={{
-                  background: `linear-gradient(135deg, ${color}10, ${color}06)`,
-                  borderRadius: 24,
-                  padding: v ? "28px 24px" : "36px 32px",
-                  textAlign: "center",
-                  border: `2px solid ${color}20`,
-                  boxShadow: `0 8px 32px ${color}12`,
-                  opacity: anim.opacity,
-                  transform: `translateY(${anim.translateY}px) scale(${anim.scale})`,
-                }}
-              >
-                {m.icon && <Icon name={m.icon} size={40} color={color} />}
-                <div
-                  style={{
-                    fontSize: v ? 48 : 56,
-                    fontWeight: 900,
-                    color,
-                    marginTop: m.icon ? 12 : 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  {m.value}
-                </div>
-                <div
-                  style={{
-                    fontSize: v ? 22 : 24,
-                    color: props.textColor,
-                    opacity: 0.6,
-                    marginTop: 10,
-                    fontWeight: 500,
-                  }}
-                >
-                  {m.label}
-                </div>
-              </div>
-            );
-          })}
+          {metrics.map((m, i) => (
+            <MetricCard
+              key={i}
+              index={i}
+              metric={m}
+              color={m.color || colors[i % colors.length]}
+              props={props}
+              vertical={v}
+            />
+          ))}
         </div>
       </div>
     </AbsoluteFill>
+  );
+};
+
+const MetricCard = ({
+  index,
+  metric,
+  color,
+  props,
+  vertical,
+}: {
+  index: number;
+  metric: { value: string; label: string; icon?: string; color?: string };
+  color: string;
+  props: LayoutProps;
+  vertical: boolean;
+}) => {
+  const anim = useEntrance(props.enableAnimations, staggerDelay(index, 6, 8));
+  return (
+    <div
+      style={{
+        background: `linear-gradient(135deg, ${color}10, ${color}06)`,
+        borderRadius: 24,
+        padding: vertical ? "28px 24px" : "36px 32px",
+        textAlign: "center",
+        border: `2px solid ${color}20`,
+        boxShadow: `0 8px 32px ${color}12`,
+        opacity: anim.opacity,
+        transform: `translateY(${anim.translateY}px) scale(${anim.scale})`,
+      }}
+    >
+      {metric.icon && <Icon name={metric.icon} size={40} color={color} />}
+      <div
+        style={{
+          fontSize: vertical ? 48 : 56,
+          fontWeight: 900,
+          color,
+          marginTop: metric.icon ? 12 : 0,
+          lineHeight: 1,
+        }}
+      >
+        {metric.value}
+      </div>
+      <div
+        style={{
+          fontSize: vertical ? 22 : 24,
+          color: props.textColor,
+          opacity: 0.6,
+          marginTop: 10,
+          fontWeight: 500,
+        }}
+      >
+        {metric.label}
+      </div>
+    </div>
   );
 };
 
@@ -538,77 +559,98 @@ export const StepProgress = ({
             gap: v ? 16 : 12,
           }}
         >
-          {steps.map((step, i) => {
-            const anim = useEntrance(props.enableAnimations, staggerDelay(i, 6, 8));
-            const isActive = activeStep === i;
-            const color = colors[i % colors.length];
-
-            return (
-              <div
-                key={i}
-                style={{
-                  flex: v ? undefined : 1,
-                  display: "flex",
-                  flexDirection: v ? "row" : "column",
-                  alignItems: "center",
-                  gap: v ? 20 : 12,
-                  background: isActive
-                    ? `linear-gradient(135deg, ${color}18, ${color}08)`
-                    : `${color}04`,
-                  borderRadius: 20,
-                  padding: v ? "20px 24px" : "28px 16px",
-                  border: `2px solid ${isActive ? color : `${color}15`}`,
-                  boxShadow: isActive ? `0 8px 32px ${color}20` : "none",
-                  opacity: anim.opacity,
-                  transform: `translateY(${anim.translateY}px) scale(${anim.scale * (isActive ? 1.02 : 1)})`,
-                }}
-              >
-                {/* Number badge */}
-                <div
-                  style={{
-                    width: v ? 44 : 48,
-                    height: v ? 44 : 48,
-                    borderRadius: "50%",
-                    background: isActive ? color : `${color}20`,
-                    color: isActive ? "#fff" : color,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: v ? 22 : 24,
-                    fontWeight: 800,
-                    flexShrink: 0,
-                  }}
-                >
-                  {i + 1}
-                </div>
-                <div style={{ textAlign: v ? "left" : "center" }}>
-                  <div
-                    style={{
-                      fontSize: v ? 26 : 24,
-                      fontWeight: 700,
-                      color: isActive ? color : props.textColor,
-                    }}
-                  >
-                    {step.label}
-                  </div>
-                  {step.description && (
-                    <div
-                      style={{
-                        fontSize: v ? 20 : 18,
-                        color: props.textColor,
-                        opacity: 0.5,
-                        marginTop: 4,
-                      }}
-                    >
-                      {step.description}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {steps.map((step, i) => (
+            <StepCard
+              key={i}
+              index={i}
+              step={step}
+              color={colors[i % colors.length]}
+              isActive={activeStep === i}
+              props={props}
+              vertical={v}
+            />
+          ))}
         </div>
       </div>
     </AbsoluteFill>
+  );
+};
+
+const StepCard = ({
+  index,
+  step,
+  color,
+  isActive,
+  props,
+  vertical,
+}: {
+  index: number;
+  step: { label: string; description?: string };
+  color: string;
+  isActive: boolean;
+  props: LayoutProps;
+  vertical: boolean;
+}) => {
+  const anim = useEntrance(props.enableAnimations, staggerDelay(index, 6, 8));
+  return (
+    <div
+      style={{
+        flex: vertical ? undefined : 1,
+        display: "flex",
+        flexDirection: vertical ? "row" : "column",
+        alignItems: "center",
+        gap: vertical ? 20 : 12,
+        background: isActive
+          ? `linear-gradient(135deg, ${color}18, ${color}08)`
+          : `${color}04`,
+        borderRadius: 20,
+        padding: vertical ? "20px 24px" : "28px 16px",
+        border: `2px solid ${isActive ? color : `${color}15`}`,
+        boxShadow: isActive ? `0 8px 32px ${color}20` : "none",
+        opacity: anim.opacity,
+        transform: `translateY(${anim.translateY}px) scale(${anim.scale * (isActive ? 1.02 : 1)})`,
+      }}
+    >
+      <div
+        style={{
+          width: vertical ? 44 : 48,
+          height: vertical ? 44 : 48,
+          borderRadius: "50%",
+          background: isActive ? color : `${color}20`,
+          color: isActive ? "#fff" : color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: vertical ? 22 : 24,
+          fontWeight: 800,
+          flexShrink: 0,
+        }}
+      >
+        {index + 1}
+      </div>
+      <div style={{ textAlign: vertical ? "left" : "center" }}>
+        <div
+          style={{
+            fontSize: vertical ? 26 : 24,
+            fontWeight: 700,
+            color: isActive ? color : props.textColor,
+          }}
+        >
+          {step.label}
+        </div>
+        {step.description && (
+          <div
+            style={{
+              fontSize: vertical ? 20 : 18,
+              color: props.textColor,
+              opacity: 0.5,
+              marginTop: 4,
+            }}
+          >
+            {step.description}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };

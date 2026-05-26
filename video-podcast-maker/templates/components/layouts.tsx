@@ -51,7 +51,7 @@ export const PaddedLayout = ({
   style?: React.CSSProperties;
   orientation?: "horizontal" | "vertical";
 }) => {
-  const padding = orientation === "vertical" ? "20px 30px" : "20px 30px";
+  const padding = orientation === "vertical" ? "20px 24px" : "20px 30px";
   return (
     <AbsoluteFill style={{ backgroundColor: bg || "#FFFFFF", padding, ...style }}>
       {children}

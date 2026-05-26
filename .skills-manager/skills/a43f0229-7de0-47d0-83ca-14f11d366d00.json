@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "a43f0229-7de0-47d0-83ca-14f11d366d00",
+  "path": "gsd-progress",
+  "path_key": "gsd-progress",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

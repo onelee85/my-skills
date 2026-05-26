@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "7cc6c826-9a19-4f87-8496-7431acdfb0c7",
+  "path": "gsd-new-workspace",
+  "path_key": "gsd-new-workspace",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

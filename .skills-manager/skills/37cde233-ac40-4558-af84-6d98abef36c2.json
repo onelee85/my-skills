@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "37cde233-ac40-4558-af84-6d98abef36c2",
+  "path": "scrapling-official",
+  "path_key": "scrapling-official",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "skillssh",
+    "ref": "d4vinci/scrapling/scrapling-official",
+    "subpath": "agent-skill/Scrapling-Skill",
+    "branch": null
+  }
+}

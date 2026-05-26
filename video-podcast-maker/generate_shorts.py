@@ -225,6 +225,7 @@ def render_short(output_dir, comp_id, index_path):
         index_path, comp_id,
         output_file,
         '--video-bitrate', '16M',
+        '--public-dir', output_dir,
     ]
     print(f"    Rendering: {' '.join(cmd)}")
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -330,8 +331,8 @@ def main():
 
     print(f"\nNext steps:")
     print(f"  1. Create Remotion composition files for each short")
-    print(f"  2. Copy short_audio.wav to public/ before rendering")
-    print(f"  3. npx remotion render src/remotion/index.ts <CompId> <output.mp4> --video-bitrate 16M")
+    print(f"  2. Render with --public-dir pointing to the short's directory")
+    print(f"  3. npx remotion render src/remotion/index.ts <CompId> <output.mp4> --video-bitrate 16M --public-dir <short-dir>/")
 
 
 if __name__ == '__main__':

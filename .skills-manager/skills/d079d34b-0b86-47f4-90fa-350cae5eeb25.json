@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "d079d34b-0b86-47f4-90fa-350cae5eeb25",
+  "path": "gsd-next",
+  "path_key": "gsd-next",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

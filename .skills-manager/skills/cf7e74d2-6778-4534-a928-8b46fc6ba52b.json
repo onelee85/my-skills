@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "cf7e74d2-6778-4534-a928-8b46fc6ba52b",
+  "path": "playwright-best-practices",
+  "path_key": "playwright-best-practices",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "skillssh",
+    "ref": "currents-dev/playwright-best-practices-skill/playwright-best-practices",
+    "subpath": null,
+    "branch": null
+  }
+}

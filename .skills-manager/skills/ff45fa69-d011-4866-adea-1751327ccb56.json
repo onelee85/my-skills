@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "ff45fa69-d011-4866-adea-1751327ccb56",
+  "path": "gsd-plan-phase",
+  "path_key": "gsd-plan-phase",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

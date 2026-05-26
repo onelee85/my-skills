@@ -1,6 +1,6 @@
 # Video Podcast Maker — Troubleshooting & Reference
 
-> **When to load:** Claude loads this file when encountering errors, when user asks about preferences, or when user asks about BGM options.
+> **When to load:** Load this file when encountering errors, when the user asks about preferences, or when the user asks about BGM options.
 
 ## Troubleshooting
 
@@ -61,9 +61,9 @@ NODE_OPTIONS="--max-old-space-size=8192" npx remotion render ...
 **Symptoms**: Output video is all black or all white, no visual elements
 
 **Solution**:
-1. Verify `timing.json` exists in `public/` and has correct `start_frame`/`duration_frames`
+1. Verify `timing.json` exists in `videos/{name}/` and has correct `start_frame`/`duration_frames`
 2. Check composition ID matches: `npx remotion render ... CompositionId` must match Root.tsx registration
-3. Ensure `podcast_audio.wav` is copied to `public/`
+3. Ensure `--public-dir videos/{name}/` is passed to all Remotion commands
 4. Check browser console in `npx remotion studio` for JS errors
 
 ---
@@ -165,7 +165,7 @@ sudo apt install fonts-noto-cjk
 
 ### Included Tracks
 
-Available at `${CLAUDE_SKILL_DIR}/assets/`:
+Available at `${SKILL_DIR}/assets/`:
 
 | Track | Mood | Best For |
 |-------|------|----------|
@@ -200,7 +200,7 @@ If user says "use my own BGM" or provides a file path, skip the default BGM copy
 | Tutorial | Calm, steady | 0.04-0.06 |
 | Lifestyle | Warm, acoustic | 0.05-0.08 |
 
-**Claude behavior:** In auto mode, select most appropriate included track by topic type. In interactive mode, ask user.
+**Agent behavior:** In auto mode, select most appropriate included track by topic type. In interactive mode, ask user.
 
 ---
 
@@ -212,14 +212,14 @@ Users can manage preferences in conversation:
 
 User says: "show preferences" / "显示偏好设置"
 
-Claude outputs current settings summary (visual, TTS, content, topic patterns, learning history count).
+The agent outputs the current settings summary (visual, TTS, content, topic patterns, learning history count).
 
 ### Reset Preferences
 
 User says: "reset preferences" / "重置偏好"
 
 ```bash
-cp ${CLAUDE_SKILL_DIR}/user_prefs.template.json ${CLAUDE_SKILL_DIR}/user_prefs.json
+cp ${SKILL_DIR}/user_prefs.template.json ${SKILL_DIR}/user_prefs.json
 echo "✓ Preferences reset to defaults"
 ```
 
@@ -227,63 +227,45 @@ echo "✓ Preferences reset to defaults"
 
 User says: "save this as tech default" / "把这个设置保存为科技类默认"
 
-Claude extracts current visual/tts/content settings, updates `topic_patterns.tech`.
+The agent extracts current visual/TTS/content settings and updates `topic_patterns.tech`.
 
 ### Manual Preference Setting
 
 User says: "set speech rate to +10%" / "dark theme as default" / "title always 100px"
 
-Claude directly updates the corresponding field in `user_prefs.json`.
+The agent directly updates the corresponding field in `user_prefs.json`.
+
+### Platform & Language Commands
+
+| User Says | Action |
+|-----------|--------|
+| "set platform youtube" | Update `global.platform` to `"youtube"` |
+| "set platform bilibili" | Update `global.platform` to `"bilibili"` |
+| "set platform xiaohongshu" | Update `global.platform` to `"xiaohongshu"` |
+| "set platform douyin" | Update `global.platform` to `"douyin"` |
+| "set platform weixin-channels" | Update `global.platform` to `"weixin-channels"` |
+| "set language en-US" | Update `global.language` to `"en-US"` |
+| "set language zh-CN" | Update `global.language` to `"zh-CN"` |
+| "show platform" | Show current platform and language |
+| "disable subtitles" | Set `global.subtitle.enabled` to `false` |
+| "enable subtitles" | Set `global.subtitle.enabled` to `true` |
+| "set subtitle font Arial" | Set `global.subtitle.fontName` to `"Arial"` |
+| "set subtitle size 24" | Set `global.subtitle.fontSize` to `24` |
+| "set CTA text" | Set `global.cta.type` to `"text"` |
+| "set CTA animation" | Set `global.cta.type` to `"animation"` |
+| "enable chapters" | Set `global.content.chapters` to `true` |
+| "disable chapters" | Set `global.content.chapters` to `false` |
 
 ---
 
 ## Preference Learning
 
-**Claude behavior:** Execute after Studio preview iteration completes.
+> **Planned feature (not yet implemented).** The schema supports `learning_history` records, but automatic detection of preference changes during Studio sessions is not yet coded. Currently, preferences are set manually via the commands above.
 
-### Detect Modifications
-
-Compare values at start vs end of Studio preview session:
-
-| Category | Detection |
-|----------|-----------|
-| Typography | titleSize, subtitleSize, bodySize changes |
-| Color | primaryColor, backgroundColor changes |
-| Layout | progress bar toggle, transition effect changes |
-
-### Progressive Learning
-
-- **First modification**: Current video only, don't update global preferences
-- **Repeated modification** (≥2 same direction): Ask user if it should become default
-
-```
-"Detected [N] consecutive increases to title size (80 → 96). Set 96px as default?"
-- Yes (recommended) → update user_prefs.json
-- No → current video only
-```
-
-### Explicit Preference Capture
-
-Detect expressions and learn:
-
-| User Expression Pattern | Learning Action |
-|------------------------|----------------|
-| "always use this color" | Save primaryColor to global |
-| "use this style for tech videos" | Save to topic_patterns.tech |
-| "remember these settings" | Save all current modifications to global |
-
-### Update Preference File
-
-After learning, update `user_prefs.json` and add `learning_history` record:
-
-```json
-{
-  "date": "2026-03-15",
-  "source": "implicit",
-  "change": { "path": "global.visual.typography.heroTitle", "from": 80, "to": 96 },
-  "context": "User adjusted title size 3 times in Studio"
-}
-```
+Planned capabilities:
+- Detect repeated style modifications during Studio preview
+- Ask user whether to promote changes to global defaults
+- Track learning history in `user_prefs.json`
 
 ---
 
@@ -301,7 +283,7 @@ URL extraction is experimental. Fallback options:
 
 ### Vision analysis colors look wrong
 
-Color values from Claude Vision are approximate. After reviewing the report:
+Color values from image analysis are approximate. After reviewing the report:
 - Adjust colors manually: edit report.json or override when creating the style profile
 - Use a color picker tool on the screenshots for precise hex values
 
@@ -314,3 +296,33 @@ Verify: `user_prefs.json` → `style_profiles` → your profile name exists with
 ### Orphaned references (deleted directory but still in index)
 
 Run `references list` — orphaned entries are auto-cleaned on list.
+
+---
+
+### Doubao TTS: Phoneme System Not Supported
+
+**Symptoms**: Inline phoneme markers `执行器[zhí xíng qì]` and `phonemes.json` entries are ignored when using Doubao backend.
+
+**Explanation**: Doubao TTS uses a plain-text HTTP API that does not support SSML or phoneme tags. The phoneme system (inline markers, project `phonemes.json`, global `phonemes.json`) only works with Azure TTS. CosyVoice and Edge TTS also do not apply phonemes.
+
+**Workaround**: If pronunciation accuracy is critical, use Azure TTS (`TTS_BACKEND=azure`).
+
+---
+
+### ElevenLabs / OpenAI / Google TTS Limitations
+
+- **No phoneme support**: Inline markers `执行器[zhí xíng qì]` and `phonemes.json` are ignored
+- **OpenAI TTS has no word boundaries**: Subtitle timing is approximate (evenly distributed across words). For precise subtitles, use Azure, Edge, or ElevenLabs
+- **Google Cloud TTS has no word boundaries**: Subtitle timing is approximate (same as OpenAI). For precise subtitles, use Azure, Edge, or ElevenLabs
+- **Workaround**: If subtitle precision is critical, use Azure TTS (`TTS_BACKEND=azure`), Edge TTS (`TTS_BACKEND=edge`), or Google Cloud TTS is not recommended for subtitle-critical workflows
+
+---
+
+### Doubao TTS: API Error Codes
+
+**Symptoms**: `Doubao API error code=XXXX`
+
+**Common codes**:
+- `code != 3000`: Non-success response. Check VOLCENGINE_APPID and VOLCENGINE_ACCESS_TOKEN.
+- HTTP 401/403: Invalid or expired access token. Regenerate at [Volcengine Console](https://console.volcengine.com/speech/service/8).
+- Timeout: Increase via `VOLCENGINE_TIMEOUT_SEC` env var (default: 60s).

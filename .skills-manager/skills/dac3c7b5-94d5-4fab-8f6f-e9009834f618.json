@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "dac3c7b5-94d5-4fab-8f6f-e9009834f618",
+  "path": "video-podcast-maker",
+  "path_key": "video-podcast-maker",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "git",
+    "ref": "https://github.com/Agents365-ai/video-podcast-maker.git",
+    "subpath": null,
+    "branch": null
+  }
+}

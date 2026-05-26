@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "257244b2-28c7-461e-9653-cd7d402db6c0",
+  "path": "gsd-plan-milestone-gaps",
+  "path_key": "gsd-plan-milestone-gaps",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

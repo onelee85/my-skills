@@ -4,15 +4,16 @@
  * 使用说明：
  * 1. 将此文件复制到项目的 src/ 目录
  * 2. 确保 Video.tsx 和 Thumbnail.tsx 已创建
- * 3. 确保 timing.json 已生成
- * 4. 运行 npx remotion studio 即可在右侧面板编辑样式
+ * 3. 确保 timing.json 已放在 --public-dir 指定的目录中
+ * 4. 运行 npx remotion studio --public-dir videos/{name}/ 即可在右侧面板编辑样式
  */
 
 import { Composition, Still } from "remotion";
+import type { CalculateMetadataFunction } from "remotion";
 import { z } from "zod";
 import { Video } from "./Video";
 import { Thumbnail } from "./Thumbnail";
-import timing from "../public/timing.json";
+import { fetchTimingData } from "./components";
 
 // 【可视化编辑】: Zod Schema 定义可编辑属性
 // Remotion Studio 会自动根据类型生成对应的编辑 UI
@@ -96,6 +97,14 @@ export const defaultVideoProps: VideoProps = {
 // 视频 ID
 const VIDEO_ID = "MyVideo";
 
+// Dynamic duration from timing.json (loaded at render time via --public-dir)
+const calculateVideoMetadata: CalculateMetadataFunction<VideoProps> = async ({
+  props,
+}) => {
+  const timing = await fetchTimingData();
+  return { durationInFrames: timing.total_frames, props };
+};
+
 export const RemotionRoot = () => {
   return (
     <>
@@ -103,7 +112,8 @@ export const RemotionRoot = () => {
       <Composition
         id={VIDEO_ID}
         component={Video}
-        durationInFrames={timing.total_frames}
+        durationInFrames={300}
+        calculateMetadata={calculateVideoMetadata}
         fps={30}
         width={3840}
         height={2160}
@@ -115,7 +125,8 @@ export const RemotionRoot = () => {
       <Composition
         id="MyVideoVertical"
         component={Video}
-        durationInFrames={timing.total_frames}
+        durationInFrames={300}
+        calculateMetadata={calculateVideoMetadata}
         fps={30}
         width={2160}
         height={3840}
@@ -146,6 +157,15 @@ export const RemotionRoot = () => {
         width={1200}
         height={900}
         defaultProps={{ aspectRatio: "4:3" }}
+      />
+
+      {/* 3:4 缩略图 - 小红书封面 */}
+      <Still
+        id="Thumbnail3x4"
+        component={Thumbnail}
+        width={1080}
+        height={1440}
+        defaultProps={{ aspectRatio: "3:4" }}
       />
 
       {/* 9:16 缩略图 - 竖屏封面 */}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "6acc3525-8dfa-496c-91bb-2527a8725c38",
+  "path": "gsd-remove-workspace",
+  "path_key": "gsd-remove-workspace",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

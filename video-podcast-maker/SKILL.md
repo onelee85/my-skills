@@ -1,15 +1,16 @@
 ---
 name: video-podcast-maker
-description: Use when user provides a topic and wants an automated video podcast created, OR when user wants to learn/analyze video design patterns from reference videos — handles research, script writing, TTS audio synthesis, Remotion video creation, and final MP4 output with background music. Also supports design learning from reference videos (learn command), style profile management, and design reference library.
+description: Use when user provides a topic and wants an automated video podcast created, OR when user wants to learn/analyze video design patterns from reference videos — handles research, script writing, TTS audio synthesis, Remotion video creation, and final MP4 output with background music. Also supports design learning from reference videos (learn command), style profile management, and design reference library. Supports Bilibili, YouTube, Xiaohongshu, Douyin, and WeChat Channels platforms with independent language configuration (zh-CN, en-US).
 argument-hint: "[topic]"
 effort: high
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch, Agent
-# --- Claude Code fields above, OpenClaw/SkillsMP fields below ---
+# --- Frontmatter fields above are primarily for Claude Code / OpenClaw.
+# Other agents such as Codex should ignore unknown fields and follow the workflow below. ---
 author: Agents365-ai
 category: Content Creation
-version: 1.3.0
+version: 2.0.0
 created: 2025-01-27
-updated: 2026-03-25
+updated: 2026-04-03
 bilibili: https://space.bilibili.com/441831884
 github: https://github.com/Agents365-ai/video-podcast-maker
 dependencies:
@@ -39,14 +40,14 @@ metadata:
 >
 > This skill depends on `remotion-best-practices`. **You MUST invoke it before proceeding:**
 > ```
-> Skill tool: skill="remotion-best-practices"
+> Invoke the skill/tool named: remotion-best-practices
 > ```
 
 # Video Podcast Maker
 
 ## Quick Start
 
-Open Claude Code and say: **"Make a video podcast about $ARGUMENTS"**
+Open your coding agent and say: **"Make a video podcast about $ARGUMENTS"**
 
 Or invoke directly: `/video-podcast-maker AI Agent tutorial`
 
@@ -59,7 +60,7 @@ Extract visual design patterns from reference videos or images, store them in a 
 ### Commands
 
 ```bash
-# Learn from images (Claude Vision analyzes design patterns)
+# Learn from images (use your agent's image analysis capability to analyze design patterns)
 python3 learn_design.py ./screenshot1.png ./screenshot2.png
 
 # Learn from a local video (ffmpeg extracts frames automatically)
@@ -101,16 +102,19 @@ Before choosing visual design in Step 9, check for matching style profiles or re
 
 ## Auto Update Check
 
-**Claude behavior:** Check for updates at most once per day (throttled by timestamp file):
+**Agent behavior:** Check for updates at most once per day (throttled by timestamp file).
+Before any shell command that reads files from this skill, resolve `SKILL_DIR` to the directory containing `SKILL.md`.
+If your agent exposes a built-in skill directory variable such as `${CLAUDE_SKILL_DIR}`, you may map it to `SKILL_DIR`.
 
 ```bash
-STAMP="${CLAUDE_SKILL_DIR}/.last_update_check"
+SKILL_DIR="${SKILL_DIR:-${CLAUDE_SKILL_DIR}}"
+STAMP="${SKILL_DIR}/.last_update_check"
 NOW=$(date +%s)
 LAST=$(cat "$STAMP" 2>/dev/null || echo 0)
 if [ $((NOW - LAST)) -gt 86400 ]; then
-  timeout 5 git -C ${CLAUDE_SKILL_DIR} fetch --quiet 2>/dev/null || true
-  LOCAL=$(git -C ${CLAUDE_SKILL_DIR} rev-parse HEAD 2>/dev/null)
-  REMOTE=$(git -C ${CLAUDE_SKILL_DIR} rev-parse origin/main 2>/dev/null)
+  timeout 5 git -C "${SKILL_DIR}" fetch --quiet 2>/dev/null || true
+  LOCAL=$(git -C "${SKILL_DIR}" rev-parse HEAD 2>/dev/null)
+  REMOTE=$(git -C "${SKILL_DIR}" rev-parse origin/main 2>/dev/null)
   echo "$NOW" > "$STAMP"
   if [ -n "$LOCAL" ] && [ -n "$REMOTE" ] && [ "$LOCAL" != "$REMOTE" ]; then
     echo "UPDATE_AVAILABLE"
@@ -122,7 +126,7 @@ else
 fi
 ```
 
-- **Update available**: Ask user via AskUserQuestion. Yes → `git -C ${CLAUDE_SKILL_DIR} pull`. No → continue.
+- **Update available**: Ask the user whether to pull updates. Yes → `git -C "${SKILL_DIR}" pull`. No → continue.
 - **Up to date / Skipped**: Continue silently.
 
 ---
@@ -143,7 +147,7 @@ Automated pipeline for professional **Bilibili horizontal knowledge videos** fro
 > - Resolution: 3840×2160 (4K) or 1920×1080 (1080p)
 > - Style: Clean white (default)
 
-**Tech stack:** Claude + Azure TTS + Remotion + FFmpeg
+**Tech stack:** Coding agent + TTS backend + Remotion + FFmpeg
 
 ### Output Specs
 
@@ -159,7 +163,7 @@ Automated pipeline for professional **Bilibili horizontal knowledge videos** fro
 
 ## Execution Modes
 
-**Claude behavior:** Detect user intent at workflow start:
+**Agent behavior:** Detect user intent at workflow start:
 
 - "Make a video about..." / no special instructions → **Auto Mode**
 - "I want to control each step" / mentions interactive → **Interactive Mode**
@@ -167,9 +171,10 @@ Automated pipeline for professional **Bilibili horizontal knowledge videos** fro
 
 ### Auto Mode (Default)
 
-Full pipeline with sensible defaults. **Only 1 mandatory stop:**
+Full pipeline with sensible defaults. **Mandatory stop at Step 9:**
 
-1. **Step 10**: After 720p preview render — user reviews, confirms before 4K
+1. **Step 9**: Launch Remotion Studio — user reviews in real-time, requests changes until satisfied
+2. **Step 10**: Only triggered when user explicitly says "render 4K" / "render final version"
 
 | Step | Decision | Auto Default |
 |------|----------|-------------|
@@ -177,7 +182,7 @@ Full pipeline with sensible defaults. **Only 1 mandatory stop:**
 | 5 | Media assets | Skip (text-only animations) |
 | 7 | Thumbnail method | Remotion-generated (16:9 + 4:3) |
 | 9 | Outro animation | Pre-made MP4 (white/black by theme) |
-| 9 | Preview method | Preview render (720p, self-validates) |
+| 9 | Preview method | Remotion Studio (mandatory) |
 | 12 | Subtitles | Skip |
 | 14 | Cleanup | Auto-clean temp files |
 
@@ -196,38 +201,13 @@ Prompts at each decision point. Activated by:
 
 ## Workflow State & Resume
 
-**Claude behavior:** Auto-persist workflow progress for error recovery.
-
-Each video maintains `videos/{name}/workflow_state.json`:
-
-```json
-{
-  "video_name": "ai-agents-explained",
-  "mode": "auto",
-  "started_at": "2026-03-16T10:30:00",
-  "current_step": 8,
-  "steps": {
-    "1": { "status": "completed", "completed_at": "..." },
-    "8": { "status": "failed", "error": "AZURE_SPEECH_KEY not set" }
-  }
-}
-```
-
-### Auto-Resume
-
-On invocation:
-1. Check for existing `videos/*/workflow_state.json`
-2. If found: "Detected unfinished video `{name}` at step {N}. Continue?"
-   - **Continue** → resume from failed step
-   - **Restart** → reset, start from Step 1
-   - **New video** → start different video
-3. If not found: start fresh
+> **Planned feature (not yet implemented).** Currently, workflow progress is tracked via the agent's conversation context. If a session is interrupted, re-invoke the skill and inspect existing files in `videos/{name}/` to determine where to resume.
 
 ---
 
 ## Technical Rules
 
-Hard constraints for video production — visual design is Claude's creative freedom:
+Hard constraints for video production. Visual design remains the agent's creative freedom within these rules:
 
 | Rule | Requirement |
 |------|-------------|
@@ -236,19 +216,20 @@ Hard constraints for video production — visual design is Claude's creative fre
 | **Content Width** | ≥85% of screen width |
 | **Bottom Safe Zone** | Bottom 100px reserved for subtitles |
 | **Audio Sync** | All animations driven by `timing.json` timestamps |
-| **Thumbnail** | MUST generate 16:9 (1920×1080) AND 4:3 (1200×900). Title ≥80px bold, high contrast. |
+| **Thumbnail** | MUST generate 16:9 (1920×1080) AND 4:3 (1200×900). Centered layout, title ≥120px, icons ≥120px, fill most of canvas. See design-guide.md. |
 | **Font** | PingFang SC / Noto Sans SC for Chinese text |
+| **Studio Before Render** | MUST launch `remotion studio` for user review. NEVER render 4K until user explicitly confirms ("render 4K", "render final"). |
 
 ---
 
 ## Additional Resources
 
-Claude loads these files on demand — **do NOT load all at once**:
+Load these files on demand — **do NOT load all at once**:
 
 - **[references/workflow-steps.md](references/workflow-steps.md)**: Detailed step-by-step instructions (Steps 1-14). Load at workflow start.
 - **[references/design-guide.md](references/design-guide.md)**: Visual minimums, typography, layout patterns, checklists. **MUST load before Step 9.**
 - **[references/troubleshooting.md](references/troubleshooting.md)**: Error fixes, BGM options, preference commands, preference learning. Load on error or user request.
-- **[examples/](examples/)**: Real production video projects. Claude may reference these for composition structure and timing.json format.
+- **[examples/](examples/)**: Real production video projects. The agent may reference these for composition structure and `timing.json` format.
 
 ---
 
@@ -261,7 +242,7 @@ project-root/                           # Remotion project root
 │   ├── Root.tsx                        # Remotion entry
 │   └── index.ts                        # Exports
 │
-├── public/media/{video-name}/          # Assets (Remotion staticFile() accessible)
+├── public/                             # Remotion default (unused — use --public-dir videos/{name}/)
 │
 ├── videos/{video-name}/                # Video project assets
 │   ├── workflow_state.json             # Workflow progress
@@ -280,9 +261,9 @@ project-root/                           # Remotion project root
 └── remotion.config.ts
 ```
 
-> **Important**: Specify full output path for Remotion render, otherwise defaults to `out/`:
+> **Important**: Always use `--public-dir` and full output path for Remotion render:
 > ```bash
-> npx remotion render src/remotion/index.ts CompositionId videos/{name}/output.mp4
+> npx remotion render src/remotion/index.ts CompositionId videos/{name}/output.mp4 --public-dir videos/{name}/
 > ```
 
 ### Naming Rules
@@ -297,16 +278,15 @@ project-root/                           # Remotion project root
 | Remotion | `thumbnail_remotion_16x9.png` | `thumbnail_remotion_4x3.png` |
 | AI | `thumbnail_ai_16x9.png` | `thumbnail_ai_4x3.png` |
 
-### Pre/Post Render File Operations
+### Public Directory
+
+Use `--public-dir videos/{name}/` for all Remotion commands. Each video's assets (timing.json, podcast_audio.wav, bgm.mp3) stay in its own directory — no copying to `public/` needed. This enables parallel renders of different videos.
 
 ```bash
-# Pre-render
-cp videos/{name}/podcast_audio.wav videos/{name}/timing.json public/
-[ -f videos/{name}/media_manifest.json ] && cp videos/{name}/media_manifest.json public/
-
-# Post-render cleanup
-rm -f public/podcast_audio.wav public/timing.json public/media_manifest.json
-rm -rf public/media/{name}
+# All render/studio/still commands use --public-dir
+npx remotion studio src/remotion/index.ts --public-dir videos/{name}/
+npx remotion render src/remotion/index.ts CompositionId videos/{name}/output.mp4 --public-dir videos/{name}/ --video-bitrate 16M
+npx remotion still src/remotion/index.ts Thumbnail16x9 videos/{name}/thumbnail.png --public-dir videos/{name}/
 ```
 
 ---
@@ -329,8 +309,8 @@ At Step 1 start:
  6. Generate publish info (Part 1) → publish_info.md
  7. Generate thumbnails (16:9 + 4:3) → thumbnail_*.png
  8. Generate TTS audio → podcast_audio.wav, timing.json
- 9. Create Remotion composition + Studio preview
-10. Render 4K video → output.mp4
+ 9. Create Remotion composition + Studio preview (mandatory stop)
+10. Render 4K video (only on user request) → output.mp4
 11. Mix background music → video_with_bgm.mp4
 12. Add subtitles (optional) → final_video.mp4
 13. Complete publish info (Part 2) → chapter timestamps

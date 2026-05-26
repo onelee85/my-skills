@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "5722cedf-a107-48e8-8741-89566c2f4f3f",
+  "path": "agent-browser",
+  "path_key": "agent-browser",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "skillssh",
+    "ref": "vercel-labs/agent-browser/agent-browser",
+    "subpath": "skills/agent-browser",
+    "branch": null
+  }
+}

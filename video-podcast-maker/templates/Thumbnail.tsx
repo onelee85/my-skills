@@ -10,7 +10,7 @@
 import { AbsoluteFill } from "remotion";
 
 interface ThumbnailProps {
-  aspectRatio?: "16:9" | "4:3" | "9:16";
+  aspectRatio?: "16:9" | "4:3" | "3:4" | "9:16";
   title?: string;
   subtitle?: string;
   tags?: string[];
@@ -28,8 +28,9 @@ export const Thumbnail = ({
 }: ThumbnailProps) => {
   const vertical = aspectRatio === "9:16";
   const compact = aspectRatio === "4:3";
-  const titleSize = vertical ? 120 : compact ? 150 : 160;
-  const subtitleSize = vertical ? 48 : compact ? 56 : 60;
+  const tall = aspectRatio === "3:4";
+  const titleSize = vertical ? 120 : tall ? 130 : compact ? 150 : 160;
+  const subtitleSize = vertical ? 48 : tall ? 50 : compact ? 56 : 60;
 
   return (
     <AbsoluteFill style={{ background: "#ffffff", fontFamily: font }}>

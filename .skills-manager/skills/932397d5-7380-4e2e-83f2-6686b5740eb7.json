@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "932397d5-7380-4e2e-83f2-6686b5740eb7",
+  "path": "gsd-remove-phase",
+  "path_key": "gsd-remove-phase",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

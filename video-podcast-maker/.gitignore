@@ -2,15 +2,28 @@
 .env
 .DS_Store
 
+# Superpowers (plans/specs)
+docs/superpowers/
+
+# Examples
+examples/
+
 # Claude
 .playwright-mcp/
 suggestions.md
 
 # Node
 node_modules/
+package-lock.json
 dist/
 out/
 bundle/
+
+# Tests
+tests/
+
+# Design references
+design_references/
 
 # Video outputs
 videos/
@@ -24,6 +37,9 @@ videos/
 
 # User preferences (learned, auto-created from template)
 user_prefs.json
+
+# Global phoneme dictionary (user-customized, auto-created from template)
+phonemes.json
 
 # Design reference binary assets (frames, covers)
 design_references/*/frames/
@@ -51,3 +67,4 @@ src/
 .worktrees/
 logs/
 public/
+CLAUDE.md

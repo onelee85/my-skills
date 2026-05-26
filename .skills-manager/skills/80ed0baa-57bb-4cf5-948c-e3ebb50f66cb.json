@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "80ed0baa-57bb-4cf5-948c-e3ebb50f66cb",
+  "path": "gsd-workstreams",
+  "path_key": "gsd-workstreams",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

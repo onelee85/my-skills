@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "704c7e14-2ce5-47ac-aa99-f060792ff790",
+  "path": "gsd-reapply-patches",
+  "path_key": "gsd-reapply-patches",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

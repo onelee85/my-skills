@@ -3,85 +3,6 @@ import type { VideoProps } from "../Root";
 import { useEntrance, useDrawOn, staggerDelay } from "./animations";
 import { Icon } from "./Icon";
 
-export const FlowChart = ({
-  props,
-  steps,
-  delay = 0,
-}: {
-  props: VideoProps;
-  steps: { label: string; description?: string; icon?: string }[];
-  delay?: number;
-}) => {
-  const v = props.orientation === "vertical";
-  const iconAnim = props.iconAnimation === "none" ? "none" : "entrance";
-  const gapSize = v ? 48 : 56;
-  const stepCount = steps.length;
-
-  return (
-    <div style={{
-      display: "flex", alignItems: "center", width: "100%",
-      flexDirection: v ? "column" : "row", gap: 0,
-      position: "relative",
-    }}>
-      {steps.map((step, i) => {
-        const a = useEntrance(props.enableAnimations, staggerDelay(i, delay, 10), "snappy");
-        return (
-          <React.Fragment key={i}>
-            <div style={{
-              flex: 1, textAlign: "center",
-              padding: v ? "28px 32px" : "32px 20px",
-              background: `linear-gradient(135deg, ${props.primaryColor}08, ${props.primaryColor}14)`,
-              borderRadius: 20,
-              boxShadow: `0 2px 8px rgba(0,0,0,0.04), 0 4px 16px ${props.primaryColor}08`,
-              border: `1px solid ${props.primaryColor}15`,
-              opacity: a.opacity, transform: `translateY(${a.translateY}px)`,
-              minWidth: 0,
-              position: "relative",
-              zIndex: 1,
-            }}>
-              {step.icon && (
-                <div style={{ marginBottom: 12 }}>
-                  <Icon name={step.icon} size={v ? 44 : 48} color={props.primaryColor} animate={iconAnim} delay={staggerDelay(i, delay, 10)} />
-                </div>
-              )}
-              <div style={{
-                fontSize: v ? 30 : 28, fontWeight: 700, color: props.primaryColor,
-              }}>
-                {step.label}
-              </div>
-              {step.description && (
-                <div style={{
-                  fontSize: v ? 22 : 20, color: props.textColor, marginTop: 8,
-                  opacity: 0.65, lineHeight: 1.4,
-                }}>
-                  {step.description}
-                </div>
-              )}
-            </div>
-            {i < stepCount - 1 && (
-              <div style={{
-                width: v ? 24 : gapSize,
-                height: v ? gapSize : 24,
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                <ArrowConnector
-                  vertical={v}
-                  color={props.primaryColor}
-                  enabled={props.enableAnimations}
-                  delay={staggerDelay(i, delay + 5, 10)}
-                />
-              </div>
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-};
-
 // Arrow connector — centered SVG with proper viewBox
 const ArrowConnector = ({
   vertical, color, enabled, delay,
@@ -129,5 +50,116 @@ const ArrowConnector = ({
         strokeDashoffset={head.strokeDashoffset}
       />
     </svg>
+  );
+};
+
+const FlowStep = ({
+  index,
+  step,
+  props,
+  delay,
+  vertical,
+  iconAnim,
+  gapSize,
+  isLast,
+}: {
+  index: number;
+  step: { label: string; description?: string; icon?: string };
+  props: VideoProps;
+  delay: number;
+  vertical: boolean;
+  iconAnim: "none" | "entrance";
+  gapSize: number;
+  isLast: boolean;
+}) => {
+  const a = useEntrance(props.enableAnimations, staggerDelay(index, delay, 10), "snappy");
+  return (
+    <React.Fragment>
+      <div style={{
+        flex: 1, textAlign: "center",
+        padding: vertical ? "28px 32px" : "32px 20px",
+        background: `linear-gradient(135deg, ${props.primaryColor}08, ${props.primaryColor}14)`,
+        borderRadius: 20,
+        boxShadow: `0 2px 8px rgba(0,0,0,0.04), 0 4px 16px ${props.primaryColor}08`,
+        border: `1px solid ${props.primaryColor}15`,
+        opacity: a.opacity, transform: `translateY(${a.translateY}px)`,
+        minWidth: 0,
+        position: "relative",
+        zIndex: 1,
+      }}>
+        {step.icon && (
+          <div style={{ marginBottom: 12 }}>
+            <Icon name={step.icon} size={vertical ? 44 : 48} color={props.primaryColor} animate={iconAnim} delay={staggerDelay(index, delay, 10)} />
+          </div>
+        )}
+        <div style={{
+          fontSize: vertical ? 30 : 28, fontWeight: 700, color: props.primaryColor,
+        }}>
+          {step.label}
+        </div>
+        {step.description && (
+          <div style={{
+            fontSize: vertical ? 22 : 20, color: props.textColor, marginTop: 8,
+            opacity: 0.65, lineHeight: 1.4,
+          }}>
+            {step.description}
+          </div>
+        )}
+      </div>
+      {!isLast && (
+        <div style={{
+          width: vertical ? 24 : gapSize,
+          height: vertical ? gapSize : 24,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+          <ArrowConnector
+            vertical={vertical}
+            color={props.primaryColor}
+            enabled={props.enableAnimations}
+            delay={staggerDelay(index, delay + 5, 10)}
+          />
+        </div>
+      )}
+    </React.Fragment>
+  );
+};
+
+export const FlowChart = ({
+  props,
+  steps,
+  delay = 0,
+}: {
+  props: VideoProps;
+  steps: { label: string; description?: string; icon?: string }[];
+  delay?: number;
+}) => {
+  const v = props.orientation === "vertical";
+  const iconAnim = props.iconAnimation === "none" ? "none" as const : "entrance" as const;
+  const gapSize = v ? 48 : 56;
+  const stepCount = steps.length;
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", width: "100%",
+      flexDirection: v ? "column" : "row", gap: 0,
+      position: "relative",
+    }}>
+      {steps.map((step, i) => (
+        <FlowStep
+          key={i}
+          index={i}
+          step={step}
+          props={props}
+          delay={delay}
+          vertical={v}
+          iconAnim={iconAnim}
+          gapSize={gapSize}
+          isLast={i === stepCount - 1}
+        />
+      ))}
+    </div>
   );
 };

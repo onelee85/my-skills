@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "5e4d4f1f-fdff-4ccc-9276-1f07765a9b19",
+  "path": "gsd-ship",
+  "path_key": "gsd-ship",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

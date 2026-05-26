@@ -10,7 +10,7 @@ import { useEntrance } from "./animations";
  * from staticFile() or remote URL. Handles delayRender/continueRender
  * lifecycle for reliable frame-accurate playback.
  *
- * Usage with local file (place JSON in public/ directory):
+ * Usage with local file (place JSON in the --public-dir directory):
  *   <LottieAnimation src="animations/brain.json" />
  *
  * Usage with remote URL (must support CORS):

@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame, interpolate } from "remotion";
-import { ICON_MAP, isEmoji } from "./iconMap";
+import { getLucideIcon, isEmoji } from "./iconMap";
 
 type AnimationType = "none" | "entrance" | "pulse" | "bounce";
 
@@ -61,8 +61,8 @@ export const Icon = ({
     );
   }
 
-  // Lucide icon: lookup and render
-  const LucideIcon = ICON_MAP[name.toLowerCase()];
+  // Lucide icon: lookup any icon from the full library
+  const LucideIcon = getLucideIcon(name);
   if (LucideIcon) {
     return (
       <span style={style}>

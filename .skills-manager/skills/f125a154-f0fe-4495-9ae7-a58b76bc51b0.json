@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "f125a154-f0fe-4495-9ae7-a58b76bc51b0",
+  "path": "gsd-ui-phase",
+  "path_key": "gsd-ui-phase",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "2c495262-6516-4514-8a4e-323faaf78fc3",
+  "path": "gsd-resume-work",
+  "path_key": "gsd-resume-work",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

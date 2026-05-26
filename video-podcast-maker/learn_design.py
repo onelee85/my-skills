@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Design Reference Learner for Video Podcast Maker
-Extracts frames from videos or copies images for Claude Vision analysis.
+Extracts frames from videos or copies images for coding-agent image analysis.
 Manages a design_references/ library and user preference profiles.
 """
 import argparse
@@ -22,7 +22,7 @@ SUPPORTED_VIDEO_EXTS = {".mp4", ".mkv", ".avi", ".mov", ".webm", ".flv"}
 MAX_FRAMES = 8
 MAX_VIDEO_SIZE_BYTES = 2 * 1024 * 1024 * 1024  # 2 GB
 
-PREFS_VERSION = "1.1"
+PREFS_VERSION = "1.6"
 
 
 # ============ Input Detection ============
@@ -280,29 +280,49 @@ def load_report(ref_dir):
 
 # ============ Preferences I/O ============
 
+def _load_template():
+    """Load user_prefs.template.json as default structure."""
+    template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "user_prefs.template.json")
+    if os.path.exists(template_path):
+        with open(template_path, encoding="utf-8") as f:
+            return json.load(f)
+    return {
+        "version": PREFS_VERSION,
+        "updated_at": None,
+        "global": {},
+        "topic_patterns": {},
+        "style_profiles": {},
+        "design_references": {},
+        "learning_history": [],
+    }
+
+
+def _deep_merge(base, override):
+    """Merge override into base recursively. Override values take priority."""
+    result = base.copy()
+    for k, v in override.items():
+        if k in result and isinstance(result[k], dict) and isinstance(v, dict):
+            result[k] = _deep_merge(result[k], v)
+        else:
+            result[k] = v
+    return result
+
+
 def _migrate_prefs(prefs):
-    """Migrate prefs from v1.0 to v1.1 in-place."""
-    if prefs.get("version") == "1.0":
-        prefs["version"] = "1.1"
-        prefs.setdefault("topic_patterns", {})
-        prefs.setdefault("style_profiles", {})
-        prefs.setdefault("design_references", {})
-        prefs.setdefault("learning_history", [])
+    """Migrate prefs to current version by merging missing fields from template."""
+    if prefs.get("version", "1.0") != PREFS_VERSION:
+        template = _load_template()
+        # Deep merge: user values override template defaults, template fills gaps
+        migrated = _deep_merge(template, prefs)
+        migrated["version"] = PREFS_VERSION
+        return migrated
     return prefs
 
 
 def load_prefs(prefs_path):
-    """Load user_prefs.json, migrating v1.0 → v1.1 if needed."""
+    """Load user_prefs.json, migrating to current version if needed."""
     if not os.path.exists(prefs_path):
-        return {
-            "version": PREFS_VERSION,
-            "updated_at": None,
-            "global": {},
-            "topic_patterns": {},
-            "style_profiles": {},
-            "design_references": {},
-            "learning_history": [],
-        }
+        return _load_template()
 
     with open(prefs_path, encoding="utf-8") as f:
         prefs = json.load(f)
@@ -442,7 +462,7 @@ def _show_reference(ref_id, design_refs_base):
 
 def _build_parser():
     parser = argparse.ArgumentParser(
-        description="Extract design reference frames for Claude Vision analysis."
+        description="Extract design reference frames for coding-agent image analysis."
     )
     parser.add_argument(
         "inputs",
@@ -475,13 +495,11 @@ def _build_parser():
     )
     parser.add_argument(
         "--profile",
-        metavar="NAME",
-        help="Style profile name to associate with this reference",
+        help="Design profile name for categorization (e.g., 'tech-minimal')",
     )
     parser.add_argument(
         "--tags",
-        metavar="TAGS",
-        help="Comma-separated tags for the reference",
+        help="Comma-separated tags for filtering (e.g., 'tech,minimal,dark')",
     )
     return parser
 
@@ -517,9 +535,6 @@ def main():
     if not args.inputs:
         parser.print_help()
         return
-
-    # Parse tags
-    tags = [t.strip() for t in args.tags.split(",")] if args.tags else []
 
     existing_ids = set(prefs.get("design_references", {}).keys())
 
@@ -568,14 +583,7 @@ def main():
             "extracted_at": datetime.now(timezone.utc).isoformat(),
         }
         save_report(report, ref_dir)
-        add_reference_index(prefs, ref_id=ref_id, title=args.name or "Image set", source_url=None, tags=tags)
-        if args.profile:
-            add_style_profile(prefs, args.profile, f"Style profile: {args.profile}", {})
-            profiles = prefs.setdefault("style_profiles", {})
-            profile = profiles[args.profile]
-            refs = profile.setdefault("references", [])
-            if ref_id not in refs:
-                refs.append(ref_id)
+        add_reference_index(prefs, ref_id=ref_id, title=args.name or "Image set", source_url=None, tags=[])
         print(f"  Extracted {len(frames)} frames")
 
     # Each video → separate reference
@@ -606,14 +614,7 @@ def main():
             "height": h,
         }
         save_report(report, ref_dir)
-        add_reference_index(prefs, ref_id=ref_id, title=os.path.basename(video_path), source_url=None, tags=tags)
-        if args.profile:
-            add_style_profile(prefs, args.profile, f"Style profile: {args.profile}", {})
-            profiles = prefs.setdefault("style_profiles", {})
-            profile = profiles[args.profile]
-            refs = profile.setdefault("references", [])
-            if ref_id not in refs:
-                refs.append(ref_id)
+        add_reference_index(prefs, ref_id=ref_id, title=os.path.basename(video_path), source_url=None, tags=[])
         print(f"  Extracted {len(frames)} frames")
 
     # URLs → placeholder (Playwright not yet implemented)
@@ -637,17 +638,10 @@ def main():
             "extracted_at": datetime.now(timezone.utc).isoformat(),
         }
         save_report(report, ref_dir)
-        add_reference_index(prefs, ref_id=ref_id, title=url, source_url=url, tags=tags)
-        if args.profile:
-            add_style_profile(prefs, args.profile, f"Style profile: {args.profile}", {})
-            profiles = prefs.setdefault("style_profiles", {})
-            profile = profiles[args.profile]
-            refs = profile.setdefault("references", [])
-            if ref_id not in refs:
-                refs.append(ref_id)
+        add_reference_index(prefs, ref_id=ref_id, title=url, source_url=url, tags=[])
 
     save_prefs(prefs, prefs_path)
-    print("\nDone. Pass the frames/ directory to Claude for design analysis.")
+    print("\nDone. Pass the frames/ directory to your coding agent for design analysis.")
 
 
 if __name__ == "__main__":

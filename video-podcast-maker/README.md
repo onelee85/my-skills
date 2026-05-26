@@ -1,69 +1,99 @@
-# 视频播客生成器
+# Video Podcast Maker
 
-[English](README_EN.md)
+[中文文档](README_CN.md)
 
-自动化流程，从主题生成专业视频播客。**针对 B站 (Bilibili) 优化**。集成研究、脚本撰写、微软 Azure TTS、Remotion 视频渲染和 FFmpeg 音频混音。
+Automated pipeline to create professional video podcasts from a topic. **Supports Bilibili, YouTube, Xiaohongshu, Douyin, and WeChat Channels** with multi-language output (zh-CN, en-US). Combines research, script generation, multi-engine TTS (Edge/Azure/Doubao/CosyVoice), Remotion video rendering, and FFmpeg audio mixing.
 
-**支持平台：** [Claude Code](https://claude.ai/code) · [OpenClaw](https://openclaw.ai/) (ClawHub) · [OpenCode](https://opencode.ai/) · [Codex](https://openai.com/index/introducing-codex/)
+**Works with:** [Claude Code](https://claude.ai/code) · [OpenClaw](https://openclaw.ai/) (ClawHub) · [OpenCode](https://opencode.ai/) · [Codex](https://openai.com/index/introducing-codex/) — any coding agent that supports SKILL.md
 
-![OpenClaw x Video Podcast Maker](assets/openclaw-collaboration.png)
+**Publish to:** Bilibili · YouTube · Xiaohongshu · Douyin · WeChat Channels
 
-> **无需编程！** 用自然语言描述你的主题，Claude 会一步步引导你完成。你做创意决策，Claude 处理所有技术细节。制作你的第一个视频播客，比你想象的更简单。
+> **No coding required!** Just describe your topic in plain language — the coding agent guides you through each step interactively. You make creative decisions, the agent handles all the technical details. Creating your first video podcast is easier than you think.
 
-> **提示：** 本项目仍在持续迭代完善中，部分功能可能还不太成熟。欢迎提出宝贵意见和建议 — 可以 [提交 Issue](https://github.com/Agents365-ai/video-podcast-maker/issues) 或直接联系作者！
+> **Note:** This project is still under active development and may not be fully mature yet. We are continuously iterating and improving. Your feedback and suggestions are greatly appreciated — feel free to [open an issue](https://github.com/Agents365-ai/video-podcast-maker/issues) or reach out!
 
-## 功能特点
+## Features
 
-- **主题研究** - 网络搜索与内容收集
-- **脚本撰写** - 带章节标记的结构化旁白
-- **多 TTS 引擎** - Azure Speech、CosyVoice（阿里云）、Edge TTS（免费，无需 API 密钥）
-- **Remotion 视频** - 基于 React 的视频合成与动画
-- **可视化样式编辑** - 在 Remotion Studio 界面调整颜色、字体、布局
-- **实时预览** - Remotion Studio 即时调试，渲染前预览效果
-- **自动同步** - 通过 `timing.json` 实现音视频同步
-- **背景音乐** - FFmpeg 叠加背景音乐
-- **字幕烧录** - 可选 SRT 字幕嵌入
-- **4K 输出** - 3840x2160 分辨率，画质清晰
-- **章节进度条** - 可视化时间轴，实时显示当前章节
-- **中英混读** - Azure Speech 支持中英文混合旁白
-- **发音校正** - 内置多音字词典 + 自定义拼音支持
-- **B站模板** - 开箱即用的 Remotion 模板（`Video.tsx`、`Root.tsx`、`Thumbnail.tsx`、`podcast.txt`），快速搭建项目
-- **偏好学习** - 自动学习用户风格偏好（颜色、字号、语速），智能应用到后续视频
+- **Topic Research** - Web search and content gathering
+- **Script Writing** - Structured narration with section markers
+- **Multi-TTS** - Edge TTS (free), Azure Speech, Volcengine Doubao, CosyVoice, ElevenLabs, Google Cloud TTS, OpenAI TTS
+- **Remotion Video** - React-based video composition with animations
+- **Visual Style Editing** - Adjust colors, fonts, and layout in Remotion Studio UI
+- **Real-time Preview** - Remotion Studio for instant debugging before render
+- **Auto Timing** - Audio-video sync via `timing.json`
+- **BGM Mixing** - Background music overlay with FFmpeg
+- **Subtitle Burning** - Optional SRT subtitle embedding
+- **4K Output** - 3840x2160 resolution for crisp uploads
+- **Chapter Progress Bar** - Visual timeline showing current section during playback
+- **Bilingual TTS** - Chinese/English mixed narration with Azure Speech or CosyVoice
+- **Pronunciation Correction** - Global + per-project phoneme dictionaries for Chinese polyphone fixes
+- **Bilibili Templates** - Ready-to-use Remotion templates (`Video.tsx`, `Root.tsx`, `Thumbnail.tsx`, `podcast.txt`) for quick project scaffolding
+- **Component Library** - Reusable visual building blocks (ComparisonCard, Timeline, CodeBlock, QuoteBlock, FeatureGrid, DataBar, StatCounter, FlowChart, IconCard, DiagramReveal, AudioWaveform, LottieAnimation, MediaSection, SectionLayouts, AnimatedBackground) for composing rich section layouts
+- **Preference Learning** - Auto-learns user style preferences (colors, fonts, speech rate) and applies them to future videos
+- **Multi-Platform** - Bilibili, YouTube, Xiaohongshu, Douyin, and WeChat Channels with independent platform and language settings
+- **Multi-Language** - Chinese (zh-CN) and English (en-US) script templates, TTS voices, subtitle fonts
+- **Subtitle Preferences** - Custom font, size, color, outline; toggle subtitle burning on/off
+- **Configurable CTA** - Auto (Bilibili triple/YouTube subscribe), animation, text, or custom
 
-### B站优化
+### Platform Optimizations
 
-- **脚本结构** - 欢迎开场 + 一键三连片尾引导
-- **章节时间戳** - 自动生成 `MM:SS` 格式，直接复制到B站
-- **封面生成** - AI (imagen/imagenty) 或 Remotion，自动生成 16:9 + 4:3 双版本
-- **视觉风格** - 大字饱满、极少留白、信息密度高
-- **发布信息** - 标题公式、标签策略、简介模板
+**Bilibili:**
+- **Script Structure** - Welcome intro + call-to-action outro (一键三连)
+- **Chapter Timestamps** - Auto-generated `MM:SS` format for B站 chapters
+- **Thumbnail Generation** - AI (imagen/imagenty) or Remotion, auto-generates 16:9 + 4:3 versions
+- **Visual Style** - Bold text, minimal whitespace, high information density
+- **Publish Info** - Title formulas, tag strategies, description templates
 
-## 工作流程
+**YouTube:**
+- **SEO Optimization** - Title <70 chars, keyword-rich description, tags and hashtags
+- **Chapters** - Auto-generated YouTube chapter timestamps (first line at 0:00)
+- **CTA** - "Like, Subscribe & Share" text animation or custom
 
-![工作流程](assets/workflow.png)
+**Xiaohongshu (小红书):**
+- **Title** - Max 20 chars, punchy and emoji-friendly
+- **Description** - 200-500 chars, 种草/knowledge-sharing style with emoji
+- **Hashtags** - `#话题#` format (double hash), 5-10 tags
+- **Thumbnail** - 3:4 (1080x1440) for feed optimization
+- **CTA** - "点赞收藏加关注" text animation
 
-## 相关技能
+**Douyin (抖音):**
+- **Format** - Vertical shorts only (9:16), no horizontal long-form
+- **Description** - 100-200 chars, casual and conversational with emoji
+- **Hashtags** - `#话题` format (single hash), 3-8 tags
+- **CTA** - "点赞关注" text only (no animation)
 
-本技能依赖 **remotion-best-practices**，并可与其他可选技能配合使用：
+**WeChat Channels (微信视频号):**
+- **Format** - Vertical shorts only (9:16), no horizontal long-form
+- **Description** - 100-300 chars, knowledge-sharing style for forwarding
+- **Hashtags** - `#话题` format (single hash), 3-8 tags
+- **CTA** - "点赞关注，转发给朋友" text only (no animation)
 
-- **remotion-best-practices** - Remotion 官方最佳实践（必需，提供核心 Remotion 模式与规范）
-- **find-skills** - 官方技能发现工具（可选，用于查找和安装更多技能）
-- **ffmpeg** - 高级音视频处理（可选）
-- **imagen / imagenty** - AI 封面生成（可选）
+## Workflow
+
+![Workflow](assets/workflow.png)
+
+## Related Skills
+
+This skill depends on **remotion-best-practices** and works alongside other optional skills:
+
+- **remotion-best-practices** - Official Remotion best practices (required, provides core Remotion patterns and guidelines)
+- **find-skills** - Official skill discovery tool (optional, helps find and install additional skills)
+- **ffmpeg** - Advanced audio/video processing (optional)
+- **imagen / imagenty** - AI thumbnail generation (optional)
 
 
-## 环境要求
+## Requirements
 
-### 系统要求
+### System Requirements
 
-| 软件 | 版本 | 用途 |
-|------|------|------|
-| **macOS / Linux** | - | 已在 macOS 测试，兼容 Linux |
-| **Python** | 3.8+ | TTS 脚本、自动化 |
-| **Node.js** | 18+ | Remotion 视频渲染 |
-| **FFmpeg** | 4.0+ | 音视频处理 |
+| Software | Version | Purpose |
+|----------|---------|---------|
+| **macOS / Linux** | - | Tested on macOS, Linux compatible |
+| **Python** | 3.8+ | TTS script, automation |
+| **Node.js** | 18+ | Remotion video rendering |
+| **FFmpeg** | 4.0+ | Audio/video processing |
 
-### 安装依赖
+### Installation
 
 ```bash
 # macOS
@@ -72,181 +102,218 @@ brew install ffmpeg node python3
 # Ubuntu/Debian
 sudo apt install ffmpeg nodejs python3 python3-pip
 
-# Python 依赖
+# Python dependencies
 pip install azure-cognitiveservices-speech dashscope edge-tts requests
 ```
 
-### 项目初始化（必需）
+### Project Setup (Required)
 
-> **重要：** 本技能需要一个 Remotion 项目作为基础。
+> **Important:** This skill requires a Remotion project as the foundation.
 
-**组件关系说明：**
+**Understanding the components:**
 
-| 组件 | 来源 | 作用 |
-|------|------|------|
-| **Remotion 项目** | `npx create-video` | 基础框架，包含 `src/`、`public/`、`package.json` |
-| **video-podcast-maker** | Claude Code skill | 工作流编排（本技能） |
+| Component | Source | Purpose |
+|-----------|--------|---------|
+| **Remotion Project** | `npx create-video` | Base framework with `src/`, `public/`, `package.json` |
+| **video-podcast-maker** | SKILL.md workflow | Workflow orchestration (this skill) |
 
 ```bash
-# 第一步：创建 Remotion 项目（基础框架）
+# Step 1: Create a new Remotion project (base framework)
 npx create-video@latest my-video-project
 cd my-video-project
-npm i  # 安装 Remotion 依赖
+npm i  # Install Remotion dependencies
 
-# 第二步：验证安装
-npx remotion studio  # 应打开浏览器预览
+# Step 2: Verify installation
+npx remotion studio  # Should open browser preview
 ```
 
-如果你已有 Remotion 项目：
+If you already have a Remotion project:
 
 ```bash
 cd your-existing-project
 npm install remotion @remotion/cli @remotion/player zod
 ```
 
-### 所需 API 密钥
+### API Keys Required
 
-| 服务 | 用途 | 获取方式 |
-|------|------|---------|
-| **Azure Speech** | TTS 语音合成（默认后端） | [Azure 门户](https://portal.azure.com/) → 语音服务 |
-| **阿里云 CosyVoice** | TTS 语音合成（备选后端） | [百炼控制台](https://bailian.console.aliyun.com/) |
-| **Edge TTS** | TTS 语音合成（免费，无需密钥） | `pip install edge-tts` |
-| **Google Gemini** | AI 封面生成（可选） | [AI Studio](https://aistudio.google.com/) |
-| **阿里云百炼** | AI 封面生成 - 中文优化（可选） | [百炼控制台](https://bailian.console.aliyun.com/) |
+| Service | Purpose | Get Key |
+|---------|---------|---------|
+| **Azure Speech** | TTS audio generation (high quality) | [Azure Portal](https://portal.azure.com/) → Speech Services |
+| **Volcengine Doubao Speech** | TTS audio generation (alternative backend) | [Volcengine Console](https://console.volcengine.com/speech/service/8) |
+| **Aliyun CosyVoice** | TTS audio generation (alternative backend) | [Aliyun Bailian](https://bailian.console.aliyun.com/) |
+| **Edge TTS** | TTS audio generation (default, free, no key needed) | `pip install edge-tts` |
+| **ElevenLabs** | TTS audio generation (highest quality English) | [ElevenLabs](https://elevenlabs.io/) |
+| **Google Cloud TTS** | TTS audio generation (wide language support) | [Google Cloud Console](https://console.cloud.google.com/) |
+| **OpenAI** | TTS audio generation (simple API) | [OpenAI Platform](https://platform.openai.com/) |
+| **Google Gemini** | AI thumbnail generation (optional) | [AI Studio](https://aistudio.google.com/) |
+| **Aliyun Dashscope** | AI thumbnail - Chinese optimized (optional) | [Aliyun Bailian](https://bailian.console.aliyun.com/) |
 
-### 环境变量
+### Environment Variables
 
-添加到 `~/.zshrc` 或 `~/.bashrc`：
+Add to `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-# TTS 后端选择：azure（默认）、cosyvoice、edge（免费，无需密钥）
-export TTS_BACKEND="azure"                           # 或 "cosyvoice" 或 "edge"
+# TTS Backend: edge (default, free), azure, doubao, cosyvoice, elevenlabs, google, openai
+export TTS_BACKEND="edge"                            # Default (free), or "azure" / "doubao" / "cosyvoice" / "elevenlabs" / "google" / "openai"
 
-# Azure TTS（默认后端）
+# Azure TTS (high quality)
 export AZURE_SPEECH_KEY="your-azure-speech-key"
 export AZURE_SPEECH_REGION="eastasia"
 
-# 阿里云 CosyVoice TTS（备选后端）+ AI 封面
+# Volcengine Doubao TTS (alternative backend)
+export VOLCENGINE_APPID="your-volcengine-appid"
+export VOLCENGINE_ACCESS_TOKEN="your-volcengine-access-token"
+export VOLCENGINE_CLUSTER="volcano_tts"              # Default cluster, adjust per console config
+export VOLCENGINE_VOICE_TYPE="BV001_streaming"       # Adjust per console voice options
+
+# Aliyun CosyVoice TTS (alternative backend) + AI thumbnails
 export DASHSCOPE_API_KEY="your-dashscope-api-key"
 
-# 可选：Google Gemini 生成 AI 封面
+# Optional: Edge TTS voice override
+export EDGE_TTS_VOICE="zh-CN-XiaoxiaoNeural"
+
+# ElevenLabs TTS
+export ELEVENLABS_API_KEY="your-elevenlabs-api-key"
+
+# Google Cloud TTS
+export GOOGLE_TTS_API_KEY="your-google-tts-api-key"
+
+# OpenAI TTS
+export OPENAI_API_KEY="your-openai-api-key"
+
+# Optional: Google Gemini for AI thumbnails
 export GEMINI_API_KEY="your-gemini-api-key"
 ```
 
-然后重新加载：`source ~/.zshrc`
+Then reload: `source ~/.zshrc`
 
-## 快速开始
+## Quick Start
 
-### 使用方法
+### Usage
 
-本技能专为 [Claude Code](https://claude.ai/claude-code) 或 [Opencode](https://github.com/opencode-ai/opencode) 设计。只需告诉 Claude：
+This skill is designed for use with coding agents that support `SKILL.md`, including [Claude Code](https://claude.ai/claude-code), [Codex](https://openai.com/index/introducing-codex/), and [OpenCode](https://github.com/opencode-ai/opencode). Simply tell your agent:
 
-> "帮我制作一个关于 [你的主题] 的视频播客"
+> "Create a video podcast about [your topic]"
 
-Claude 会自动引导你完成整个流程。
+The agent will guide you through the entire workflow automatically.
 
-> **提示：** 经过多次测试，初次生成的效果和模型效果有很大的关系，模型越智能越先进，生成的效果会越好。目前初次生成 Codex 和 Claude Code 生成的视频效果都不错，OpenCode 搭配 GLM-5 也还不错。如果第一次生成的不够好，可以在 Remotion Studio 预览，并让 coding agent 继续修改。
+> **Tips:** The quality of first-generation output heavily depends on the model's intelligence and capabilities — the smarter and more advanced the model, the better the results. In our testing, both Codex and Claude Code produce excellent videos on the first try, and OpenCode paired with GLM-5 also delivers solid results. If the initial output isn't perfect, you can preview it in Remotion Studio and ask the coding agent to keep refining until you're satisfied.
 
-### 预览与可视化编辑
+### Preview & Visual Editing with Remotion Studio
 
-在渲染最终视频前，使用 Remotion Studio 实时预览和可视化编辑样式：
+Before rendering the final video, use Remotion Studio to preview and visually edit styles:
 
 ```bash
 npx remotion studio src/remotion/index.ts
 ```
 
-这会打开一个浏览器编辑器，你可以：
-- **可视化样式编辑** - 在右侧面板调整颜色、字体、尺寸
-- 逐帧拖动时间轴查看效果
-- 编辑组件时实时看到更新
-- 即时调试时间和动画
+This opens a browser-based editor where you can:
+- **Visual Style Editing** - Adjust colors, fonts, and sizes in the right panel
+- Scrub through the timeline frame-by-frame
+- See live updates as you edit components
+- Debug timing and animations instantly
 
-#### 可编辑属性
+#### Editable Properties
 
-| 分类 | 属性 |
-|------|------|
-| **颜色** | 主色调、背景色、文字颜色、强调色 |
-| **字体** | 标题大小 (72-120)、副标题、正文 |
-| **进度条** | 显示/隐藏、高度、字号、激活颜色 |
-| **音频** | BGM 音量 (0-0.3) |
-| **动画** | 启用/禁用入场动画 |
+| Category | Properties |
+|----------|-----------|
+| **Colors** | Primary color, background, text color, accent |
+| **Typography** | Title size (72-120), subtitle size, body size |
+| **Progress Bar** | Show/hide, height, font size, active color |
+| **Audio** | BGM volume (0-0.3) |
+| **Animation** | Enable/disable entrance animations |
 
 
-## 输出结构
+## Configuration Files
+
+| File | Scope | Purpose |
+|------|-------|---------|
+| `phonemes.json` | Global | Chinese polyphone dictionary shared across all projects. Edit to add/fix pronunciations (e.g., 行 háng vs xíng). Per-project overrides go in `videos/{name}/phonemes.json` |
+| `user_prefs.template.json` | Global | Default preferences template. Copied to `user_prefs.json` on first run, which auto-evolves as the skill learns your style |
+| `prefs_schema.json` | Global | JSON Schema for preference validation. Do not edit manually |
+| `tsconfig.json` | Global | TypeScript config for Remotion templates |
+
+## Output Structure
 
 ```
-videos/{视频名称}/
-├── topic_definition.md      # 主题定义
-├── topic_research.md        # 研究笔记
-├── podcast.txt              # 旁白脚本
-├── podcast_audio.wav        # TTS 音频
-├── podcast_audio.srt        # 字幕文件
-├── timing.json              # 章节时间轴
-├── thumbnail_*.png          # 视频封面
-├── publish_info.md          # 标题、标签、简介
-├── part_*.wav               # TTS 分段（临时，Step 14 清理）
-├── output.mp4               # 原始渲染（临时）
-├── video_with_bgm.mp4       # 含背景音乐（临时）
-└── final_video.mp4          # 最终输出
+videos/{video-name}/
+├── topic_definition.md      # Topic direction
+├── topic_research.md        # Research notes
+├── podcast.txt              # Narration script
+├── phonemes.json            # (Optional) Project-specific pronunciation overrides
+├── podcast_audio.wav        # TTS audio
+├── podcast_audio.srt        # Subtitles
+├── timing.json              # Section timing for sync
+├── thumbnail_*.png          # Video thumbnails
+├── publish_info.md          # Title, tags, description
+├── part_*.wav               # TTS segments (temp, cleanup via Step 14)
+├── output.mp4               # Raw render (temp)
+├── video_with_bgm.mp4       # With BGM (temp)
+└── final_video.mp4          # Final output
 ```
 
-## 背景音乐
+## Background Music
 
-`assets/` 目录下包含：
-- `perfect-beauty-191271.mp3` - 轻快积极
-- `snow-stevekaldes-piano-397491.mp3` - 舒缓钢琴
+Included tracks in `assets/`:
+- `perfect-beauty-191271.mp3` - Upbeat, positive
+- `snow-stevekaldes-piano-397491.mp3` - Calm piano
 
-## 开发路线
+## Roadmap
 
-- [x] 支持竖屏视频 (9:16)，适配 B站手机端沉浸式播放
-- [x] Remotion 转场效果 (@remotion/transitions)，章节间过渡更专业
-- [x] 组件模板库 (ComparisonCard, Timeline, CodeBlock, QuoteBlock, FeatureGrid, DataBar, StatCounter, FlowChart, IconCard)
-- [x] 广播级画质升级（渐变背景、多层阴影、动画计数器、质量检查清单）
-- [x] 多 TTS 引擎支持 (Azure Speech + CosyVoice + Edge TTS)
-- [x] Edge TTS 免费后端（无需 API 密钥）
-- [x] 断点续传（`--resume` 参数）
-- [x] 预估模式（`--dry-run` 预估时长，不调用 API）
-- [x] 用户偏好自我进化（自动学习视觉/TTS/内容风格偏好）
-- [x] 视觉检查 - 对生成后的页面进行视觉检查，检查其美观性、布局合理性等
-- [x] 重构为 Claude Code 最新 SKILL 规范（`references/` 分层、`${CLAUDE_SKILL_DIR}` 变量、`argument-hint`/`effort`/`allowed-tools` 等新 frontmatter 字段）
-- [x] 设计学习系统 — 从参考视频/图片中学习设计风格，构建设计参考库和可复用的风格档案
-- [ ] Playwright 自动抓取 — 通过 URL 直接分析 B站/YouTube 视频设计风格（Phase 4）
-- [ ] Step 9 智能推荐 — 制作视频时自动匹配并推荐已有风格档案（Phase 5）
-- [ ] 封面设计学习 — 将学到的封面风格应用到 Thumbnail.tsx 模板（Phase 5）
-- [ ] 更多 TTS 引擎 (看用户需求)
-- [ ] Windows 适配 (WSL 验证 + 文档)
+- [x] Vertical video support (9:16) for Bilibili mobile-first content
+- [x] Remotion transitions (@remotion/transitions) for professional chapter transitions
+- [x] Component template library (ComparisonCard, Timeline, CodeBlock, QuoteBlock, FeatureGrid, DataBar, StatCounter, FlowChart, IconCard)
+- [x] Broadcast quality upgrade (gradient backgrounds, layered shadows, animated counters, quality checklists)
+- [x] Multi TTS engine support (7 engines: Edge, Azure, Doubao, CosyVoice, ElevenLabs, OpenAI, Google Cloud)
+- [x] Edge TTS free backend (no API key required)
+- [x] Multi-platform support (Bilibili + YouTube) with independent language configuration (zh-CN, en-US)
+- [x] Resume from breakpoint (`--resume` flag)
+- [x] Dry-run mode (`--dry-run` for duration estimation)
+- [x] User preference self-evolution (auto-learns visual/TTS/content style preferences)
+- [x] Refactor skill docs for portable `SKILL.md` usage across Claude Code, Codex, OpenCode, and OpenClaw
+- [x] Design learning system — Learn design styles from reference videos/images, build a design reference library and reusable style profiles
+- [ ] Playwright auto-capture — Analyze Bilibili/YouTube video design styles directly via URL (Phase 4)
+- [ ] Step 9 smart suggestions — Auto-match and recommend existing style profiles when creating videos (Phase 5)
+- [ ] Cover design learning — Apply learned cover styles to Thumbnail.tsx template (Phase 5)
+- [ ] YouTube automated publishing — Upload via YouTube Data API with metadata, chapters, thumbnails
+- [ ] Windows compatibility (WSL verification + docs)
 
-## 开源协议
+## License
 
 MIT
 
-## 支持作者
+## Support
 
-如果这个项目对你有帮助，欢迎支持作者：
+If this project helps you, consider supporting the author:
 
 <table>
   <tr>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/Agents365-ai/images_payment/main/qrcode/wechat-pay.png" width="180" alt="微信支付">
+      <img src="https://raw.githubusercontent.com/Agents365-ai/images_payment/main/qrcode/wechat-pay.png" width="180" alt="WeChat Pay">
       <br>
-      <b>微信支付</b>
+      <b>WeChat Pay</b>
     </td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/Agents365-ai/images_payment/main/qrcode/alipay.png" width="180" alt="支付宝">
+      <img src="https://raw.githubusercontent.com/Agents365-ai/images_payment/main/qrcode/alipay.png" width="180" alt="Alipay">
       <br>
-      <b>支付宝</b>
+      <b>Alipay</b>
     </td>
     <td align="center">
       <img src="https://raw.githubusercontent.com/Agents365-ai/images_payment/main/qrcode/buymeacoffee.png" width="180" alt="Buy Me a Coffee">
       <br>
       <b>Buy Me a Coffee</b>
     </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/Agents365-ai/images_payment/main/awarding/award.gif" width="180" alt="Give a Reward">
+      <br>
+      <b>Give a Reward</b>
+    </td>
   </tr>
 </table>
 
-## 作者
+## Author
 
 **Agents365-ai**
 
-- B站: https://space.bilibili.com/441831884
+- Bilibili: https://space.bilibili.com/441831884
 - GitHub: https://github.com/Agents365-ai
