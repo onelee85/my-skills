@@ -8,7 +8,7 @@
   "source": {
     "type": "git",
     "ref": "https://github.com/Agents365-ai/video-podcast-maker.git",
-    "subpath": null,
+    "subpath": "skills",
     "branch": null
   }
 }
