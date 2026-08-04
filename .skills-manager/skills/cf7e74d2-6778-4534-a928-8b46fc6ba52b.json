@@ -8,7 +8,7 @@
   "source": {
     "type": "skillssh",
     "ref": "currents-dev/playwright-best-practices-skill/playwright-best-practices",
-    "subpath": null,
+    "subpath": "playwright-best-practices",
     "branch": null
   }
 }

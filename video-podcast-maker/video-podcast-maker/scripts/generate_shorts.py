@@ -87,19 +87,24 @@ def load_script(input_dir):
 
 
 def filter_sections(timing, min_duration, skip_names):
-    """Return sections that qualify for short generation."""
+    """Split sections into (qualifying, skipped-with-reason) for short generation."""
     skip_set = {s.strip() for s in skip_names.split(',') if s.strip()}
     qualifying = []
+    skipped = []
     for sec in timing.get('sections', []):
         name = sec['name']
         if name in skip_set:
-            continue
-        if sec.get('is_silent', False):
-            continue
-        if sec.get('duration', 0) < min_duration:
-            continue
-        qualifying.append(sec)
-    return qualifying
+            skipped.append({"name": name, "reason": "in --skip list"})
+        elif sec.get('is_silent', False):
+            skipped.append({"name": name, "reason": "silent section"})
+        elif sec.get('duration', 0) < min_duration:
+            skipped.append({
+                "name": name,
+                "reason": f"duration {sec.get('duration', 0):.1f}s below --min-duration {min_duration}s",
+            })
+        else:
+            qualifying.append(sec)
+    return qualifying, skipped
 
 
 def extract_audio(input_dir, section, output_dir):
@@ -308,26 +313,9 @@ def _run(args, started_at):
 
     script_titles = load_script(input_dir)
 
-    # Build the structured filter result. We replicate filter_sections() here
-    # rather than calling it because we want per-section skip reasons in the
-    # envelope (filter_sections only returns the kept list).
     skip_set = {s.strip() for s in args.skip.split(',') if s.strip()}
     all_section_records = timing.get('sections', [])
-    qualifying = []
-    skipped = []
-    for sec in all_section_records:
-        name = sec['name']
-        if name in skip_set:
-            skipped.append({"name": name, "reason": "in --skip list"})
-        elif sec.get('is_silent', False):
-            skipped.append({"name": name, "reason": "silent section"})
-        elif sec.get('duration', 0) < args.min_duration:
-            skipped.append({
-                "name": name,
-                "reason": f"duration {sec.get('duration', 0):.1f}s below --min-duration {args.min_duration}s",
-            })
-        else:
-            qualifying.append(sec)
+    qualifying, skipped = filter_sections(timing, args.min_duration, args.skip)
 
     shorts_dir = os.path.join(input_dir, 'shorts')
     result = {
@@ -346,7 +334,7 @@ def _run(args, started_at):
 
     if not qualifying:
         skip_list = sorted(skip_set)
-        print(f"No qualifying sections found.")
+        print("No qualifying sections found.")
         print(f"  Skipped names: {skip_list}")
         print(f"  Min duration: {args.min_duration}s")
         print(f"  All sections: {result['all_sections']}")
@@ -368,9 +356,9 @@ def _run(args, started_at):
 
         # 1. Extract audio
         if extract_audio(input_dir, sec, output_dir):
-            print(f"    \u2713 Audio extracted")
+            print("    \u2713 Audio extracted")
         else:
-            print(f"    \u2717 Audio extraction failed, skipping")
+            print("    \u2717 Audio extraction failed, skipping")
             result['failed'].append({
                 "section_name": name,
                 "stage": "extract_audio",
@@ -411,19 +399,44 @@ def _run(args, started_at):
 
         print()
 
+    if not result['generated'] and result['failed']:
+        sys.exit(cli_envelope.emit_error(
+            args,
+            "ffmpeg_failed" if all(f['stage'] == 'extract_audio' for f in result['failed'])
+            else "internal_error",
+            f"All {len(result['failed'])} qualifying section(s) failed",
+            extra={"result": result},
+            started_at=started_at,
+        ))
+
+    # Partial render failure must not pass silently: --render was requested
+    # and at least one short didn't render. (First-run --render is expected
+    # to fail until the per-short compositions are created — see
+    # workflow-publish.md "Create short compositions" — but a failure must
+    # be reported, not absorbed by the generated-count.)
+    render_failures = [f for f in result['failed'] if f['stage'] == 'render']
+    if args.render and render_failures:
+        sys.exit(cli_envelope.emit_error(
+            args,
+            "render_failed",
+            f"{len(render_failures)} of {len(result['generated'])} short(s) failed to render",
+            extra={"result": result},
+            started_at=started_at,
+        ))
+
     # Summary
     print("=" * 50)
     print(f"Generated {len(result['generated'])} shorts in {shorts_dir}/")
     for g in result['generated']:
         print(f"  {g['comp_id']}: {g['section_name']} ({g['total_frames']} frames)")
 
-    print(f"\nNext steps:")
-    print(f"  1. Create Remotion composition files for each short")
-    print(f"  2. Render with --public-dir pointing to the short's own directory")
-    print(f"     (NOT the long-form videos/{{name}}/ — shorts have their own audio + timing)")
-    print(f"  3. npx remotion render src/remotion/index.ts <CompId> \\")
-    print(f"       videos/<name>/shorts/<section>/<CompId>.mp4 \\")
-    print(f"       --video-bitrate 16M --public-dir videos/<name>/shorts/<section>/")
+    print("\nNext steps:")
+    print("  1. Create Remotion composition files for each short")
+    print("  2. Render with --public-dir pointing to the short's own directory")
+    print("     (NOT the long-form videos/{name}/ — shorts have their own audio + timing)")
+    print("  3. npx remotion render src/remotion/index.ts <CompId> \\")
+    print("       videos/<name>/shorts/<section>/<CompId>.mp4 \\")
+    print("       --video-bitrate 16M --public-dir videos/<name>/shorts/<section>/")
 
     sys.exit(cli_envelope.emit_success(args, result, started_at=started_at))
 

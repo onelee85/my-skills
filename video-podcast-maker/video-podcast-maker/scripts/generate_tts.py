@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-TTS Script for Video Podcast Maker (Azure / Doubao / CosyVoice / Edge / ElevenLabs / OpenAI / Google TTS)
+TTS Script for Video Podcast Maker — all backends route through the ttscn component skill.
 Generates audio from podcast.txt and creates SRT subtitles + timing.json for Remotion sync
 """
+import json
 import os
 import sys
 import re
@@ -11,6 +12,7 @@ import argparse
 import subprocess
 
 import cli_envelope
+from tts.markers import protect_pauses, restore_pauses, strip_markers
 from tts.phonemes import load_phoneme_dicts, extract_inline_phonemes
 from tts.sections import parse_sections, validate_sections, print_validation_report, match_section_times
 from tts.srt import write_srt, write_timing, reconcile_timing_with_wav
@@ -20,15 +22,18 @@ from tts.voice_advisor import print_advisory
 def build_parser():
     parser = argparse.ArgumentParser(
         description='Generate TTS audio from podcast script',
-        epilog='Backends: edge (default, free), azure, doubao, cosyvoice, elevenlabs, openai, google. '
-               'Env: TTS_BACKEND, AZURE_SPEECH_KEY, VOLCENGINE_APPID, VOLCENGINE_ACCESS_TOKEN, '
-               'DASHSCOPE_API_KEY, EDGE_TTS_VOICE, ELEVENLABS_API_KEY, OPENAI_API_KEY, GOOGLE_TTS_API_KEY, TTS_RATE'
+        epilog='Backends (all synthesized by the required ttscn component skill): edge (default, '
+               'free), azure, cosyvoice, doubao, tencent, baidu, minimax, xunfei, elevenlabs, '
+               'openai, google. '
+               'Env: TTS_BACKEND, TTS_VOICE, TTS_RATE + per-platform API keys (check_prereqs.py '
+               'validates the active backend).'
     )
     parser.add_argument('--input', '-i', default='podcast.txt', help='Input script file (default: podcast.txt)')
     parser.add_argument('--output-dir', '-o', default='.', help='Output directory (default: current dir)')
     parser.add_argument('--phonemes', '-p', default=None, help='Phoneme dictionary JSON file')
     parser.add_argument('--backend', '-b', default=None,
-        help='TTS backend: edge, azure, doubao, cosyvoice, elevenlabs, openai, or google')
+        help='TTS backend (routed via ttscn): edge, azure, cosyvoice, doubao, tencent, '
+             'baidu, minimax, xunfei, elevenlabs, openai, google')
     parser.add_argument('--resume', action='store_true', help='Resume from last breakpoint')
     parser.add_argument('--dry-run', action='store_true',
         help='Plan synthesis without calling the TTS API. Emits backend, voice, '
@@ -73,7 +78,10 @@ def _hard_split(sentence, max_chars):
         if len(buf) >= budget:
             cut = -1
             for i in range(len(buf) - 1, max(-1, len(buf) - lookback - 1), -1):
-                if buf[i] in _SOFT_PUNCT:
+                # Never cut inside an unclosed [...] token — [PAUSE:0p8]
+                # contains ':' which would otherwise be a soft-punct cut.
+                if buf[i] in _SOFT_PUNCT and \
+                        buf.rfind("[", 0, i + 1) <= buf.rfind("]", 0, i + 1):
                     cut = i
                     break
             if cut >= 0:
@@ -139,6 +147,13 @@ def main():
         sys.stdout = sys.stderr
     try:
         return _run(args, started_at)
+    except Exception as exc:
+        # An agent must always get an envelope on stdout, never a bare
+        # traceback (SystemExit from emit_* passes through untouched).
+        sys.exit(cli_envelope.emit_error(
+            args, "internal_error", f"{type(exc).__name__}: {exc}",
+            started_at=started_at,
+        ))
     finally:
         sys.stdout = sys.__stdout__
 
@@ -167,9 +182,10 @@ def _run(args, started_at):
     else:
         # --validate path: skip backend init, but use the registry's edge limit
         # so chunk-count estimates stay in sync with real synthesis.
-        from tts.backends import get_max_chars
+        from tts.backends import get_max_chars, get_synthesize_func
         BACKEND = "edge"
         MAX_CHARS = get_max_chars(BACKEND)
+        config = {}  # unreachable past the --validate early exit below
 
     from tts.backends import resolve_speech_rate
     SPEECH_RATE, rate_source = resolve_speech_rate()
@@ -198,7 +214,7 @@ def _run(args, started_at):
             section_names = [s['name'] for s in sections]
             # Run the real chunker so the agent sees the actual chunk count
             # an agent gets from `tts run` — not a stale `len(text) // 200`
-            # estimate that predates the 400 → 2000 max_chars bump.
+            # estimate that predates the per-backend max_chars registry (currently 400).
             chunks = chunk_text(clean_text, MAX_CHARS)
             if errors:
                 sys.exit(cli_envelope.emit_error(
@@ -229,14 +245,11 @@ def _run(args, started_at):
     phoneme_dict = {**file_phonemes, **inline_phonemes}
     print(f"Phoneme dictionary: {len(phoneme_dict)} entries (file: {len(file_phonemes)} + inline: {len(inline_phonemes)})")
 
-    # Phoneme markup is SSML — only emit on backends that consume SSML.
-    # The matrix lives in tts/backends/__init__.py BACKENDS[name]['supports_ssml'].
-    if phoneme_dict and not args.validate:
-        from tts.backends import BACKENDS
-        if not BACKENDS.get(BACKEND, {}).get('supports_ssml'):
-            print(f"Warning: {BACKEND} TTS does not consume SSML. "
-                  "Inline phoneme markers and phonemes.json will be ignored. "
-                  "Consider using Azure for phoneme support.", file=sys.stderr)
+    # Phoneme application happens inside ttscn (azure -> SSML <phoneme>,
+    # minimax -> pinyin annotations; other platforms ignore the file).
+    if phoneme_dict:
+        print("Note: phonemes are applied by ttscn where the platform "
+              "supports them (azure SSML, minimax pinyin annotations).")
 
     # --- Default section ---
     if not sections:
@@ -254,8 +267,25 @@ def _run(args, started_at):
     # SSML support (Doubao / ElevenLabs / OpenAI / Google) by rewriting the source text.
     # Trade-off: it also changes what the subtitle says (Y appears, X is gone). Prefer the
     # inline [pinyin] marker or phonemes.json when SSML is available (Azure / Edge).
-    clean_text = re.sub(r'([A-Za-z0-9\-]+)，读作["""]([\u4e00-\u9fff]+)["""]', r"\2", clean_text)
+    clean_text = re.sub(
+        r'([A-Za-z0-9\-]+)，读作["“”]([\u4e00-\u9fff]+)["“”]', r"\2", clean_text
+    )
     print(f"Text length: {len(clean_text)} characters")
+
+    # Re-normalize section anchors with the same transforms applied to the
+    # narration text — an anchor containing [pinyin] markers or a "读作"
+    # rewrite would otherwise never match the (already normalized) boundary
+    # text and would silently fall back to proportional estimates.
+    pinyin_inline_re = re.compile(
+        r"([\u4e00-\u9fff]+)\[[a-zA-Zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜü\s]+\]"
+    )
+    for s in sections:
+        first = s.get("first_text", "")
+        first = pinyin_inline_re.sub(r"\1", first)
+        first = re.sub(
+            r'([A-Za-z0-9\-]+)，读作["“”]([\u4e00-\u9fff]+)["“”]', r"\2", first
+        )
+        s["first_text"] = first
 
     # Voice advisory — flag when content vs voice choice is suboptimal
     if BACKEND == 'azure':
@@ -272,7 +302,7 @@ def _run(args, started_at):
         est_frames = int(est_duration * 30)
         non_silent = [s for s in sections if not s.get('is_silent')]
         chunks = chunk_text(clean_text, MAX_CHARS)
-        print(f"\n--- Dry Run ---")
+        print("\n--- Dry Run ---")
         print(f"Chinese chars: {cn_chars}, English words: {en_words}")
         print(f"Total chars: {len(clean_text)} -> {len(chunks)} chunk(s) (max {MAX_CHARS}/chunk)")
         print(f"Estimated duration: {est_duration:.0f}s ({est_duration/60:.1f}min)")
@@ -298,15 +328,38 @@ def _run(args, started_at):
             "non_silent_sections": len(non_silent),
         }, started_at=started_at))
 
+    # --- Expressiveness markers ---
+    # [PAUSE:x] / sound tags must never reach subtitles or section matching;
+    # section anchors are compared against marker-free boundary text.
+    for s in sections:
+        s['first_text'] = strip_markers(s.get('first_text', ''))
+
     # --- Chunk text ---
-    chunks = chunk_text(clean_text, MAX_CHARS)
+    # protect_pauses keeps the '.' inside [PAUSE:0.8] from being treated as a
+    # sentence boundary (a chunk split mid-marker would break it in half).
+    chunks = [restore_pauses(c) for c in chunk_text(protect_pauses(clean_text), MAX_CHARS)]
     print(f"Split into {len(chunks)} chunks")
+
+    # Chunks keep raw [PAUSE:x] / sound-tag markers — ttscn renders or
+    # strips them per platform.
 
     # --- Synthesize ---
     config['speech_rate'] = SPEECH_RATE
-    config['phoneme_dict'] = phoneme_dict
+    if phoneme_dict:
+        # ttscn consumes phonemes as a file — write the merged dict
+        # (global + project + inline) next to the audio parts.
+        phonemes_path = os.path.join(args.output_dir, "phonemes_resolved.json")
+        with open(phonemes_path, "w", encoding="utf-8") as f:
+            json.dump(phoneme_dict, f, ensure_ascii=False, indent=2)
+        config['phonemes_path'] = phonemes_path
     synthesize = get_synthesize_func(BACKEND)
-    part_files, word_boundaries, total_duration = synthesize(chunks, config, args.output_dir, resume=args.resume)
+    try:
+        part_files, word_boundaries, total_duration = synthesize(chunks, config, args.output_dir, resume=args.resume)
+    except RuntimeError as exc:
+        sys.exit(cli_envelope.emit_error(
+            args, "backend_failed", str(exc),
+            extra={"backend": BACKEND}, started_at=started_at,
+        ))
     print(f"\nCollected {len(word_boundaries)} word boundaries")
     print(f"Total duration: {total_duration:.1f}s")
 
@@ -329,8 +382,13 @@ def _run(args, started_at):
         for pf in part_files:
             f.write(f"file '{os.path.basename(pf)}'\n")
 
+    # cwd is output_dir (the list entries are basenames), so the list and
+    # output paths must be basenames too — a relative --output-dir would
+    # otherwise be resolved twice and point nowhere.
     concat_result = subprocess.run(
-        ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", concat_list, "-c", "copy", output_wav],
+        ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
+         "-i", os.path.basename(concat_list), "-c", "copy",
+         os.path.basename(output_wav)],
         capture_output=True, text=True, cwd=args.output_dir)
     if concat_result.returncode != 0:
         sys.exit(cli_envelope.emit_error(
@@ -343,7 +401,7 @@ def _run(args, started_at):
             started_at=started_at,
         ))
     print(f"Done: {output_wav}")
-    print(f"  Temp files kept: {len(part_files)} part_*.wav (manual cleanup: Step 14)")
+    print(f"  Temp files kept: {len(part_files)} part_*.wav (manual cleanup: Step 10.3)")
 
     # Reconcile timing.json with actual WAV duration. Azure can under-report
     # audio_duration when SSML tags (break/phoneme/say-as) are present, leading
