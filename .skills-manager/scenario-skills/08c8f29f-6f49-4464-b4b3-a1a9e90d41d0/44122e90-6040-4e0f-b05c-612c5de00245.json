@@ -15,6 +15,7 @@
     "crush": true,
     "cursor": true,
     "de": true,
+    "deepseek_harness": true,
     "droid": true,
     "gemini_cli": true,
     "github_copilot": true,
@@ -37,6 +38,7 @@
     "trae_cn": true,
     "warp": true,
     "windsurf": true,
+    "workbuddy": true,
     "zencoder": true
   }
 }

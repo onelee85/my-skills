@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scenario_id": "08c8f29f-6f49-4464-b4b3-a1a9e90d41d0",
   "skill_id": "c89906b5-de1e-4679-a8e4-cbe9e5a07373",
-  "sort_order": 15,
+  "sort_order": 13,
   "tools": {
     "antigravity": true,
     "claude_code": true,
@@ -14,6 +14,7 @@
     "crush": true,
     "cursor": true,
     "de": true,
+    "deepseek_harness": true,
     "gemini_cli": true,
     "junie": true,
     "kiro": true,
@@ -30,6 +31,7 @@
     "trae": true,
     "trae_cn": true,
     "warp": true,
+    "workbuddy": true,
     "zencoder": true
   }
 }
