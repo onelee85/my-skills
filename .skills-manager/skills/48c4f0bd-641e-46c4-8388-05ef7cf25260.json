@@ -8,7 +8,7 @@
   "source": {
     "type": "skillssh",
     "ref": "firecrawl/cli/firecrawl",
-    "subpath": "skills/firecrawl-cli",
+    "subpath": "skills/firecrawl",
     "branch": null
   }
 }
