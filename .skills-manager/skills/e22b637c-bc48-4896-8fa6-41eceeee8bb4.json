@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "e22b637c-bc48-4896-8fa6-41eceeee8bb4",
+  "path": "source-driven-development",
+  "path_key": "source-driven-development",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "git",
+    "ref": "https://github.com/addyosmani/agent-skills",
+    "subpath": "skills/source-driven-development",
+    "branch": null
+  }
+}

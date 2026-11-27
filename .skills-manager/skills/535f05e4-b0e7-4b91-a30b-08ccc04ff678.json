@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "535f05e4-b0e7-4b91-a30b-08ccc04ff678",
+  "path": "accessibility-engineering",
+  "path_key": "accessibility-engineering",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "git",
+    "ref": "https://github.com/addyosmani/agent-skills",
+    "subpath": "skills/accessibility-engineering",
+    "branch": null
+  }
+}

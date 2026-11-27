@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "b398af6d-5545-450b-8de9-2bb5f9b9c0a5",
+  "path": "frontend-ui-engineering",
+  "path_key": "frontend-ui-engineering",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "git",
+    "ref": "https://github.com/addyosmani/agent-skills",
+    "subpath": "skills/frontend-ui-engineering",
+    "branch": null
+  }
+}

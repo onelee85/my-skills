@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "ab5c4079-f5ca-4701-bb80-3469e483fb07",
+  "path": "ci-cd-and-automation",
+  "path_key": "ci-cd-and-automation",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "git",
+    "ref": "https://github.com/addyosmani/agent-skills",
+    "subpath": "skills/ci-cd-and-automation",
+    "branch": null
+  }
+}

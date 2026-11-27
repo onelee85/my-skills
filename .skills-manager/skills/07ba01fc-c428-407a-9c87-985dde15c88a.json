@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "07ba01fc-c428-407a-9c87-985dde15c88a",
+  "path": "constraint-driven-development",
+  "path_key": "constraint-driven-development",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "git",
+    "ref": "https://github.com/addyosmani/agent-skills",
+    "subpath": "skills/constraint-driven-development",
+    "branch": null
+  }
+}

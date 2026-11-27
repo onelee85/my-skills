@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "5bae149c-a696-4dc8-b969-2b3b111bdec4",
+  "path": "using-agent-skills",
+  "path_key": "using-agent-skills",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "git",
+    "ref": "https://github.com/addyosmani/agent-skills",
+    "subpath": "skills/using-agent-skills",
+    "branch": null
+  }
+}
